@@ -45,6 +45,11 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 vim.g.termguicolors = true
 
+-- Options for NVimTree
+vim.g.loaded_netrw = 1
+vim.g.loaded_netrwPlugin = 1
+
+
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    https://github.com/folke/lazy.nvim
 --    `:help lazy.nvim.txt` for more info
@@ -76,6 +81,23 @@ require('lazy').setup({
 
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
+  
+  -- For Qalc (calculator CLI app)
+  'Apeiros-46B/qalc.nvim',
+
+  -- Tree explorer
+  {
+    "nvim-tree/nvim-tree.lua",
+    dependencies = {
+      "nvim-tree/nvim-web-devicons",
+    },
+    opts = {
+      sort = { sorter = "case_sensitive", },
+      view = { width = 30, },
+      filters = { dotfiles = true, },
+    },
+  },
+
 
   -- NOTE: This is where your plugins related to LSP can be installed.
   --  The configuration is done below. Search for lspconfig to find it below.
