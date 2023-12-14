@@ -74,6 +74,10 @@ vim.opt.rtp:prepend(lazypath)
 --    as they will be available in your neovim runtime.
 require('lazy').setup({
   -- NOTE: First, some plugins that don't require any configuration
+  --
+  -- Debugger
+  'mfussenegger/nvim-dap',
+  'jay-babu/mason-nvim-dap.nvim',
 
   -- Git related plugins
   'tpope/vim-fugitive',
@@ -88,9 +92,13 @@ require('lazy').setup({
   },
 
   -- Guard for formatting
+  "clang-format",
   {
     "nvimdev/guard.nvim",
-    event = "BufReadPre",
+    dependencies = {
+      "nvimdev/guard-collection"
+    },
+    event = "VeryLazy",
     config = function()
       local ft = require("guard.filetype")
       ft("c,cpp"):fmt("clang-format")
@@ -580,6 +588,12 @@ require('which-key').register {
 require('mason').setup()
 require('mason-lspconfig').setup()
 
+-- [ Automatically Configure Dap ]
+require("mason-nvim-dap").setup({
+  ensure_installed = {"cppdbg"}
+})
+
+
 -- Enable the following language servers
 --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
 --
@@ -654,6 +668,7 @@ cmp.setup {
     ['<C-d>'] = cmp.mapping.scroll_docs(-4),
     ['<C-f>'] = cmp.mapping.scroll_docs(4),
     ['<C-Space>'] = cmp.mapping.complete {},
+    ['<C-e>'] = cmp.mapping.abort(),
     ['<CR>'] = cmp.mapping.confirm {
       behavior = cmp.ConfirmBehavior.Replace,
       select = true,

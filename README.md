@@ -26,6 +26,11 @@ Distribution Alternatives:
 Requirements:
 * Make sure to review the readmes of the plugins if you are experiencing errors. In particular:
   * [ripgrep](https://github.com/BurntSushi/ripgrep#installation) is required for multiple [telescope](https://github.com/nvim-telescope/telescope.nvim#suggested-dependencies) pickers.
+* Python3, Pip, Venv
+* `cmake-language-server` (install via `pip install cmake-language-server`)
+* CMake
+* Node & NPM
+* tsserver (via `npm install -g typescript-language-server typescript`)
 * See [Windows Installation](#Windows-Installation) if you have trouble with `telescope-fzf-native`
 
 Neovim's configurations are located under the following paths, depending on your OS:
@@ -47,12 +52,12 @@ git clone https://github.com/matthewtolman/kickstart.nvim.git "${XDG_CONFIG_HOME
 
 ```
 # on Windows (cmd)
-git clone https://github.com/nvim-lua/kickstart.nvim.git %userprofile%\AppData\Local\nvim\ 
+git clone https://github.com/matthewtolman/kickstart.nvim.git %userprofile%\AppData\Local\nvim\ 
 ```
 
 ```
 # on Windows (powershell)
-git clone https://github.com/nvim-lua/kickstart.nvim.git $env:USERPROFILE\AppData\Local\nvim\ 
+git clone https://github.com/matthewtolman/kickstart.nvim.git $env:USERPROFILE\AppData\Local\nvim\ 
 ```
 
 
