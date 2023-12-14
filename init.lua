@@ -79,12 +79,21 @@ require('lazy').setup({
   'tpope/vim-fugitive',
   'tpope/vim-rhubarb',
   'myusuf3/numbers.vim',
-
+  
+  {
+    "andrewferrier/wrapping.nvim",
+    config = function()
+        require("wrapping").setup()
+    end
+  },
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
-  
   -- For Qalc (calculator CLI app)
   'Apeiros-46B/qalc.nvim',
+
+  -- For AceJump equivalent
+  'smoka7/hop.nvim',
+  'rmagatti/auto-session',
 
   -- Tree explorer
   {
@@ -315,6 +324,33 @@ vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous dia
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic message' })
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })
+
+-- [[Configure Hop]]
+require('hop').setup {
+  uppercase_labels = true,
+  multi_windows = true,
+}
+
+local hop = require('hop')
+
+vim.keymap.set('', ';', function()
+  hop.hint_patterns()
+end, {})
+vim.keymap.set('', '<leader>;', function()
+  hop.hint_words()
+end, {})
+
+-- [[Configure Session Manager]]
+require("auto-session").setup {
+  auto_session_suppress_dirs = { "~/", "~/dev", "~/Downloads", "/"},
+  options = {
+    theme = 'tokyonight',
+  },
+  sections = {lualine_c = {require('auto-session.lib').current_session_name}},
+  auto_save_enabled=true,
+  auto_restore_enabled=true,
+  auto_session_use_git_branch=true,
+}
 
 -- [[ Highlight on yank ]]
 -- See `:help vim.highlight.on_yank()`
@@ -553,6 +589,7 @@ local servers = {
   },
   zls = {},
   emmet_language_server = {},
+  cmake = {}
 }
 
 -- Setup neovim lua configuration
