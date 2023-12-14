@@ -86,6 +86,21 @@ require('lazy').setup({
         require("wrapping").setup()
     end
   },
+
+  -- Guard for formatting
+  {
+    "nvimdev/guard.nvim",
+    event = "BufReadPre",
+    config = function()
+      local ft = require("guard.filetype")
+      ft("c,cpp"):fmt("clang-format")
+
+      require("guard").setup({
+        fmt_on_save = true,
+        lsp_as_default_formatter = fals,
+      })
+    end,
+  },
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
   -- For Qalc (calculator CLI app)
