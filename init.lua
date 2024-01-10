@@ -75,6 +75,10 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: First, some plugins that don't require any configuration
   --
+  
+  -- Janet
+  'bakpakin/janet.vim',
+
   -- Debugger
   'mfussenegger/nvim-dap',
   'jay-babu/mason-nvim-dap.nvim',
@@ -90,6 +94,7 @@ require('lazy').setup({
         require("wrapping").setup()
     end
   },
+  'chrisbra/vim-xml-runtime',
 
   -- Guard for formatting
   "clang-format",
