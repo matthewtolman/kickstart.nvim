@@ -75,7 +75,13 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: First, some plugins that don't require any configuration
   --
-  
+  -- Clojure
+  'Olical/conjure',
+  'guns/vim-sexp',
+  'tpope/vim-sexp-mappings-for-regular-people',
+  'tpope/vim-repeat',
+  'tpope/vim-surround',
+
   -- Janet
   'bakpakin/janet.vim',
 
@@ -276,6 +282,7 @@ require('lazy').setup({
     -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     dependencies = {
+      'HiPhish/rainbow-delimiters.nvim',
       'nvim-treesitter/nvim-treesitter-textobjects',
     },
     build = ':TSUpdate',
@@ -469,7 +476,7 @@ vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = 
 vim.defer_fn(function()
   require('nvim-treesitter.configs').setup {
     -- Add languages to be installed here that you want installed for treesitter
-    ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim', 'bash' },
+    ensure_installed = { 'c', 'cpp', 'clojure', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim', 'bash' },
 
     -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
     auto_install = false,
@@ -484,6 +491,9 @@ vim.defer_fn(function()
         scope_incremental = '<c-s>',
         node_decremental = '<M-space>',
       },
+    },
+    rainbow = {
+        enable = true,
     },
     textobjects = {
       select = {
@@ -623,7 +633,8 @@ local servers = {
   },
   zls = {},
   emmet_language_server = {},
-  cmake = {}
+  cmake = {},
+  clojure_lsp = {},
 }
 
 -- Setup neovim lua configuration
