@@ -75,9 +75,18 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: First, some plugins that don't require any configuration
   --
+  -- Clojure
+  'Olical/conjure',
+  'guns/vim-sexp',
+  'tpope/vim-sexp-mappings-for-regular-people',
+  'tpope/vim-repeat',
+  'tpope/vim-surround',
   
   -- Janet
   'bakpakin/janet.vim',
+  
+  -- Odin
+  'Tetralux/odin.vim',
 
   -- Debugger
   'mfussenegger/nvim-dap',
@@ -276,6 +285,7 @@ require('lazy').setup({
     -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     dependencies = {
+      'HiPhish/rainbow-delimiters.nvim',
       'nvim-treesitter/nvim-treesitter-textobjects',
     },
     build = ':TSUpdate',
@@ -469,7 +479,7 @@ vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = 
 vim.defer_fn(function()
   require('nvim-treesitter.configs').setup {
     -- Add languages to be installed here that you want installed for treesitter
-    ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim', 'bash' },
+    ensure_installed = { 'c', 'cpp', 'clojure', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim', 'bash' },
 
     -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
     auto_install = false,
@@ -484,6 +494,9 @@ vim.defer_fn(function()
         scope_incremental = '<c-s>',
         node_decremental = '<M-space>',
       },
+    },
+    rainbow = {
+      enable = true,
     },
     textobjects = {
       select = {
@@ -623,7 +636,10 @@ local servers = {
   },
   zls = {},
   emmet_language_server = {},
-  cmake = {}
+  ols = { filetypes = {'odin'} },
+
+  -- CLOJURE
+  clojure_lsp = {},
 }
 
 -- Setup neovim lua configuration
@@ -702,6 +718,37 @@ cmp.setup {
     { name = 'luasnip' },
   },
 }
+
+-- folding
+
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+
+--- opens folds on file open
+local M = {}
+-- function to create a list of commands and convert them to autocommands
+-------- This function is taken from https://github.com/norcalli/nvim_utils
+function M.nvim_create_augroups(definitions)
+    for group_name, definition in pairs(definitions) do
+        vim.api.nvim_command('augroup '..group_name)
+        vim.api.nvim_command('autocmd!')
+        for _, def in ipairs(definition) do
+            local command = table.concat(vim.tbl_flatten{'autocmd', def}, ' ')
+            vim.api.nvim_command(command)
+        end
+        vim.api.nvim_command('augroup END')
+    end
+end
+
+
+local autoCommands = {
+    -- other autocommands
+    open_folds = {
+        {"BufReadPost,FileReadPost", "*", "normal zR"}
+    }
+}
+
+M.nvim_create_augroups(autoCommands)
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
