@@ -81,7 +81,7 @@ require('lazy').setup({
   'tpope/vim-sexp-mappings-for-regular-people',
   'tpope/vim-repeat',
   'tpope/vim-surround',
-  
+
   -- Janet
   'bakpakin/janet.vim',
   
@@ -496,7 +496,7 @@ vim.defer_fn(function()
       },
     },
     rainbow = {
-      enable = true,
+        enable = true,
     },
     textobjects = {
       select = {
@@ -638,6 +638,7 @@ local servers = {
   emmet_language_server = {},
   ols = { filetypes = {'odin'} },
 
+  cmake = {},
   -- CLOJURE
   clojure_lsp = {},
 }
