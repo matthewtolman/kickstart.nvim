@@ -49,6 +49,13 @@ vim.g.termguicolors = true
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 
+-- Ballerina
+vim.filetype.add({
+  extension = {
+    bal = 'ballerina',
+  }
+})
+
 
 -- [[ Install `lazy.nvim` plugin manager ]]
 --    https://github.com/folke/lazy.nvim
@@ -81,10 +88,16 @@ require('lazy').setup({
   'tpope/vim-sexp-mappings-for-regular-people',
   'tpope/vim-repeat',
   'tpope/vim-surround',
+  'PaterJason/cmp-conjure',
 
+  -- Testing
+  'vim-test/vim-test',
+
+  -- File search
+  { 'junegunn/fzf.vim',     dependencies = { 'junegunn/fzf' } },
   -- Janet
   'bakpakin/janet.vim',
-  
+
   -- Odin
   'Tetralux/odin.vim',
 
@@ -96,14 +109,17 @@ require('lazy').setup({
   'tpope/vim-fugitive',
   'tpope/vim-rhubarb',
   'myusuf3/numbers.vim',
-  
+
   {
     "andrewferrier/wrapping.nvim",
     config = function()
-        require("wrapping").setup()
+      require("wrapping").setup()
     end
   },
   'chrisbra/vim-xml-runtime',
+  
+  -- Undo tree
+  'mbbill/undotree',
 
   -- Guard for formatting
   "clang-format",
@@ -131,6 +147,17 @@ require('lazy').setup({
   -- For AceJump equivalent
   'smoka7/hop.nvim',
   'rmagatti/auto-session',
+
+  -- BUffer managment
+  'Asheq/close-buffers.vim',
+
+  -- File management
+  {
+    'stevearc/oil.nvim',
+    opts = {},
+    -- Optional dependencies
+    dependencies = { "nvim-tree/nvim-web-devicons" },
+  },
 
   -- Tree explorer
   {
@@ -363,6 +390,9 @@ vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnos
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })
 
+-- Undo tree keymaps
+vim.keymap.set('n', '<leader><F5>', vim.cmd.UndotreeToggle)
+
 -- [[Configure Hop]]
 require('hop').setup {
   uppercase_labels = true,
@@ -380,14 +410,14 @@ end, {})
 
 -- [[Configure Session Manager]]
 require("auto-session").setup {
-  auto_session_suppress_dirs = { "~/", "~/dev", "~/Downloads", "/"},
+  auto_session_suppress_dirs = { "~/", "~/dev", "~/Downloads", "/" },
   options = {
     theme = 'tokyonight',
   },
-  sections = {lualine_c = {require('auto-session.lib').current_session_name}},
-  auto_save_enabled=true,
-  auto_restore_enabled=true,
-  auto_session_use_git_branch=true,
+  sections = { lualine_c = { require('auto-session.lib').current_session_name } },
+  auto_save_enabled = true,
+  auto_restore_enabled = true,
+  auto_session_use_git_branch = true,
 }
 
 -- [[ Highlight on yank ]]
@@ -446,7 +476,7 @@ local function live_grep_git_root()
   local git_root = find_git_root()
   if git_root then
     require('telescope.builtin').live_grep({
-      search_dirs = {git_root},
+      search_dirs = { git_root },
     })
   end
 end
@@ -496,7 +526,7 @@ vim.defer_fn(function()
       },
     },
     rainbow = {
-        enable = true,
+      enable = true,
     },
     textobjects = {
       select = {
@@ -584,6 +614,12 @@ local on_attach = function(_, bufnr)
     print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
   end, '[W]orkspace [L]ist Folders')
 
+  vim.lsp.start({
+    name = 'ballerina-lsp',
+    cmd = {'bal', 'start-language-server'},
+    root_dir = vim.fs.dirname(vim.fs.find({ 'Ballerina.toml' }, { upward = true })[1])
+  })
+
   -- Create a command `:Format` local to the LSP buffer
   vim.api.nvim_buf_create_user_command(bufnr, 'Format', function(_)
     vim.lsp.buf.format()
@@ -608,7 +644,7 @@ require('mason-lspconfig').setup()
 
 -- [ Automatically Configure Dap ]
 require("mason-nvim-dap").setup({
-  ensure_installed = {"cppdbg"}
+  ensure_installed = { "cppdbg" }
 })
 
 
@@ -626,7 +662,7 @@ local servers = {
   -- pyright = {},
   -- rust_analyzer = {},
   tsserver = {},
-  html = { filetypes = { 'html', 'twig', 'hbs'} },
+  html = { filetypes = { 'html', 'twig', 'hbs' } },
 
   lua_ls = {
     Lua = {
@@ -636,12 +672,23 @@ local servers = {
   },
   zls = {},
   emmet_language_server = {},
-  ols = { filetypes = {'odin'} },
+  ols = { filetypes = { 'odin' } },
 
   cmake = {},
   -- CLOJURE
   clojure_lsp = {},
 }
+
+-- Setup oil.nvim
+require("oil").setup({
+  columns = {
+    "icon",
+    "permissions",
+    "size",
+    "mtime"
+  },
+})
+vim.keymap.set("n", "-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
 
 -- Setup neovim lua configuration
 require('neodev').setup()
@@ -717,6 +764,7 @@ cmp.setup {
   sources = {
     { name = 'nvim_lsp' },
     { name = 'luasnip' },
+    { name = 'conjure' },
   },
 }
 
@@ -730,23 +778,22 @@ local M = {}
 -- function to create a list of commands and convert them to autocommands
 -------- This function is taken from https://github.com/norcalli/nvim_utils
 function M.nvim_create_augroups(definitions)
-    for group_name, definition in pairs(definitions) do
-        vim.api.nvim_command('augroup '..group_name)
-        vim.api.nvim_command('autocmd!')
-        for _, def in ipairs(definition) do
-            local command = table.concat(vim.tbl_flatten{'autocmd', def}, ' ')
-            vim.api.nvim_command(command)
-        end
-        vim.api.nvim_command('augroup END')
+  for group_name, definition in pairs(definitions) do
+    vim.api.nvim_command('augroup ' .. group_name)
+    vim.api.nvim_command('autocmd!')
+    for _, def in ipairs(definition) do
+      local command = table.concat(vim.tbl_flatten { 'autocmd', def }, ' ')
+      vim.api.nvim_command(command)
     end
+    vim.api.nvim_command('augroup END')
+  end
 end
 
-
 local autoCommands = {
-    -- other autocommands
-    open_folds = {
-        {"BufReadPost,FileReadPost", "*", "normal zR"}
-    }
+  -- other autocommands
+  open_folds = {
+    { "BufReadPost,FileReadPost", "*", "normal zR" }
+  }
 }
 
 M.nvim_create_augroups(autoCommands)
