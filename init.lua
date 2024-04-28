@@ -89,6 +89,9 @@ require('lazy').setup({
   'tpope/vim-repeat',
   'tpope/vim-surround',
   'PaterJason/cmp-conjure',
+  
+  -- Ballerina
+  'lankavitharana/ballerina-vim',
 
   -- Testing
   'vim-test/vim-test',
@@ -108,7 +111,6 @@ require('lazy').setup({
   -- Git related plugins
   'tpope/vim-fugitive',
   'tpope/vim-rhubarb',
-  'myusuf3/numbers.vim',
 
   {
     "andrewferrier/wrapping.nvim",
