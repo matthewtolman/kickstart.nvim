@@ -482,6 +482,19 @@ vim.keymap.set('n', '<leader><F5>', vim.cmd.UndotreeToggle)
 vim.keymap.set('n', '<leader>pt', vim.cmd.ParinferToggle)
 vim.keymap.set({ 'n', 'v'}, '<leader>sk', vim.cmd.Screenkey)
 
+-- quickfix list and vimgrep
+
+vim.keymap.set('n', ']q', vim.cmd.cnext)
+vim.keymap.set('n', '[q', vim.cmd.cprev)
+vim.keymap.set('n', ']Q', vim.cmd.cfirst)
+vim.keymap.set('n', '[Q', vim.cmd.clast)
+vim.keymap.set('n', ']l', vim.cmd.copen)
+vim.keymap.set('n', '[l', vim.cmd.cclose)
+vim.keymap.set('n', ']f', vim.cmd.cnfile)
+vim.keymap.set('n', '[f', vim.cmd.cpfile)
+vim.keymap.set('n', ']L', vim.cmd.cnewer)
+vim.keymap.set('n', '[L', vim.cmd.colder)
+
 
 -- [[Configure Hop]]
 require('hop').setup {
