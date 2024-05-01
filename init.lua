@@ -84,14 +84,81 @@ require('lazy').setup({
   --
   -- Clojure
   'Olical/conjure',
-  'guns/vim-sexp',
-  'tpope/vim-sexp-mappings-for-regular-people',
-  'tpope/vim-repeat',
+  {
+    "dundalek/parpar.nvim",
+    dependencies = { "gpanders/nvim-parinfer", "julienvincent/nvim-paredit" },
+    config = function()
+      local paredit = require("nvim-paredit")
+      require("parpar").setup {
+        paredit = {
+          indent = {enabled = true},
+          -- pass any nvim-paredit options here
+          keys = {
+            -- custom bindings are automatically wrapped
+            [">)"] = { paredit.api.slurp_forwards, "Slurp forwards" },
+            [">("] = { paredit.api.barf_backwards, "Barf backwards" },
+
+            ["<)"] = { paredit.api.barf_forwards, "Barf forwards" },
+            ["<("] = { paredit.api.slurp_backwards, "Slurp backwards" },
+
+            [">e"] = { paredit.api.drag_element_forwards, "Drag element right" },
+            ["<e"] = { paredit.api.drag_element_backwards, "Drag element left" },
+
+            [">f"] = { paredit.api.drag_form_forwards, "Drag form right" },
+            ["<f"] = { paredit.api.drag_form_backwards, "Drag form left" },
+
+            ["<localleader>o"] = { paredit.api.raise_form, "Raise form" },
+            ["<localleader>O"] = { paredit.api.raise_element, "Raise element" },
+
+            ["E"] = {
+              paredit.api.move_to_next_element_tail,
+              "Jump to next element tail",
+              -- by default all keybindings are dot repeatable
+              repeatable = false,
+              mode = { "n", "x", "o", "v" },
+            },
+            ["W"] = {
+              paredit.api.move_to_next_element_head,
+              "Jump to next element head",
+              repeatable = false,
+              mode = { "n", "x", "o", "v" },
+            },
+
+            ["B"] = {
+              paredit.api.move_to_prev_element_head,
+              "Jump to previous element head",
+              repeatable = false,
+              mode = { "n", "x", "o", "v" },
+            },
+            ["gE"] = {
+              paredit.api.move_to_prev_element_tail,
+              "Jump to previous element tail",
+              repeatable = false,
+              mode = { "n", "x", "o", "v" },
+            },
+
+            ["("] = {
+              paredit.api.move_to_parent_form_start,
+              "Jump to parent form's head",
+              repeatable = false,
+              mode = { "n", "x", "v" },
+            },
+            [")"] = {
+              paredit.api.move_to_parent_form_end,
+              "Jump to parent form's tail",
+              repeatable = false,
+              mode = { "n", "x", "v" },
+            },
+          }
+        }
+      }
+    end
+  },
+  --'guns/vim-sexp',
+  --'tpope/vim-sexp-mappings-for-regular-people',
+  --'tpope/vim-repeat',
   'tpope/vim-surround',
   'PaterJason/cmp-conjure',
-  
-  -- Ballerina
-  'lankavitharana/ballerina-vim',
 
   -- Testing
   'vim-test/vim-test',
@@ -119,7 +186,7 @@ require('lazy').setup({
     end
   },
   'chrisbra/vim-xml-runtime',
-  
+
   -- Undo tree
   'mbbill/undotree',
 
@@ -616,12 +683,6 @@ local on_attach = function(_, bufnr)
     print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
   end, '[W]orkspace [L]ist Folders')
 
-  vim.lsp.start({
-    name = 'ballerina-lsp',
-    cmd = {'bal', 'start-language-server'},
-    root_dir = vim.fs.dirname(vim.fs.find({ 'Ballerina.toml' }, { upward = true })[1])
-  })
-
   -- Create a command `:Format` local to the LSP buffer
   vim.api.nvim_buf_create_user_command(bufnr, 'Format', function(_)
     vim.lsp.buf.format()
@@ -769,6 +830,8 @@ cmp.setup {
     { name = 'conjure' },
   },
 }
+
+cmp.setup.filetype('markdown', { sources = {} })
 
 -- folding
 
