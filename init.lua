@@ -462,6 +462,9 @@ vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagn
 -- Undo tree keymaps
 vim.keymap.set('n', '<leader><F5>', vim.cmd.UndotreeToggle)
 
+-- ParInfer keymaps
+vim.keymap.set('n', '<leader>pt', vim.cmd.ParinferToggle)
+
 -- [[Configure Hop]]
 require('hop').setup {
   uppercase_labels = true,
