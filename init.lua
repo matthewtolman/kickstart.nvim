@@ -804,9 +804,9 @@ cmp.setup {
     ['<C-f>'] = cmp.mapping.scroll_docs(4),
     ['<C-Space>'] = cmp.mapping.complete {},
     ['<C-e>'] = cmp.mapping.abort(),
-    ['<CR>'] = cmp.mapping.confirm {
+    --[[ ['<C-CR>'] = cmp.mapping.confirm {
       behavior = cmp.ConfirmBehavior.Replace,
-      select = true,
+      select = false,
     },
     ['<Tab>'] = cmp.mapping(function(fallback)
       if cmp.visible() then
@@ -825,7 +825,11 @@ cmp.setup {
       else
         fallback()
       end
-    end, { 'i', 's' }),
+    end, { 'i', 's' }), ]]--
+    ['<Tab>'] = cmp.mapping.confirm {
+      behavior = cmp.ConfirmBehavior.Replace,
+      select = false,
+    }
   },
   sources = {
     { name = 'nvim_lsp' },
