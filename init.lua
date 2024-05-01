@@ -80,6 +80,22 @@ vim.opt.rtp:prepend(lazypath)
 --  You can also configure plugins after the setup call,
 --    as they will be available in your neovim runtime.
 require('lazy').setup({
+  -- Screen Key
+  {
+    "NStefan002/screenkey.nvim",
+    cmd = "Screenkey",
+    version = "*",
+    config = function ()
+      require ('screenkey').setup({
+        disable = {
+          filetypes = {'toggleterm'},
+          buftypes = {'terminal'}
+        },
+        clear_after = 2,
+      })
+    end ,
+  },
+
   -- NOTE: First, some plugins that don't require any configuration
   --
   -- Clojure
@@ -464,6 +480,8 @@ vim.keymap.set('n', '<leader><F5>', vim.cmd.UndotreeToggle)
 
 -- ParInfer keymaps
 vim.keymap.set('n', '<leader>pt', vim.cmd.ParinferToggle)
+vim.keymap.set({ 'n', 'v'}, '<leader>sk', vim.cmd.Screenkey)
+
 
 -- [[Configure Hop]]
 require('hop').setup {
