@@ -31,6 +31,8 @@ Requirements:
 * CMake
 * Node & NPM
 * tsserver (via `npm install -g typescript-language-server typescript`)
+* [fzf](https://github.com/junegunn/fzf)
+* [ag](https://github.com/ggreer/the_silver_searcher)
 * See [Windows Installation](#Windows-Installation) if you have trouble with `telescope-fzf-native`
 
 Neovim's configurations are located under the following paths, depending on your OS:
