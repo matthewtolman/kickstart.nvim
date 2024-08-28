@@ -53,6 +53,7 @@ vim.g.loaded_netrwPlugin = 1
 vim.filetype.add({
   extension = {
     bal = 'ballerina',
+    hurl = 'hurl',
   }
 })
 
@@ -80,20 +81,116 @@ vim.opt.rtp:prepend(lazypath)
 --  You can also configure plugins after the setup call,
 --    as they will be available in your neovim runtime.
 require('lazy').setup({
+  -- Presenting
+  {
+    "sotte/presenting.nvim",
+    opts = {},
+    cmd = {"Presenting"},
+  },
+  -- images
+  'edluffy/hologram.nvim',
+  -- Hurl (http testing)
+  {
+    "jellydn/hurl.nvim",
+    dependencies = {
+        "MunifTanjim/nui.nvim",
+        "nvim-lua/plenary.nvim",
+        "nvim-treesitter/nvim-treesitter"
+    },
+    ft = "hurl",
+    opts = {
+      -- Show debugging info
+      debug = false,
+      -- Show notification on run
+      show_notification = false,
+      -- Show response in popup or split
+      mode = "split",
+      -- Default formatter
+      formatters = {
+        json = { 'jq' }, -- Make sure you have install jq in your system, e.g: brew install jq
+        html = {
+          'prettier', -- Make sure you have install prettier in your system, e.g: npm install -g prettier
+          '--parser',
+          'html',
+        },
+      },
+    },
+    keys = {
+      -- Run API request
+      { "<leader>hA", "<cmd>HurlRunner<CR>", desc = "Run All requests" },
+      { "<leader>ha", "<cmd>HurlRunnerAt<CR>", desc = "Run Api request" },
+      { "<leader>he", "<cmd>HurlRunnerToEntry<CR>", desc = "Run Api request to entry" },
+      { "<leader>hm", "<cmd>HurlToggleMode<CR>", desc = "Hurl Toggle Mode" },
+      { "<leader>hv", "<cmd>HurlVerbose<CR>", desc = "Run Api in verbose mode" },
+      -- Run Hurl request in visual mode
+      { "<leader>hh", ":HurlRunner<CR>", desc = "Hurl Runner", mode = "v" },
+    },
+  },
+
+  -- Go
+  'ray-x/go.nvim',
+
+  -- Elixir,
+  'elixir-editors/vim-elixir',
+  {
+    "scalameta/nvim-metals",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+    },
+    ft = { "scala", "sbt", "java" },
+    opts = function()
+      local metals_config = require("metals").bare_config()
+      metals_config.on_attach = function(client, bufnr)
+        -- your on_attach function
+      end
+
+      return metals_config
+    end,
+    config = function(self, metals_config)
+      local nvim_metals_group = vim.api.nvim_create_augroup("nvim-metals", { clear = true })
+      vim.api.nvim_create_autocmd("FileType", {
+        pattern = self.ft,
+        callback = function()
+          require("metals").initialize_or_attach(metals_config)
+        end,
+        group = nvim_metals_group,
+      })
+    end
+  },
+
   -- Screen Key
   {
     "NStefan002/screenkey.nvim",
     cmd = "Screenkey",
     version = "*",
-    config = function ()
-      require ('screenkey').setup({
+    config = function()
+      require('screenkey').setup({
         disable = {
-          filetypes = {'toggleterm'},
-          buftypes = {'terminal'}
+          filetypes = { 'toggleterm' },
+          buftypes = { 'terminal' }
         },
         clear_after = 2,
       })
-    end ,
+    end,
+  },
+
+  -- Database UI
+  {
+    'kristijanhusak/vim-dadbod-ui',
+    dependencies = {
+      { 'tpope/vim-dadbod',                     lazy = true },
+      { 'kristijanhusak/vim-dadbod-completion', ft = { 'sql', 'mysql', 'plsql' }, lazy = true },
+    },
+    cmd = {
+      'DBUI',
+      'DBUIToggle',
+      'DBUIAddConnection',
+      'DBUIFindBuffer',
+    },
+    init = function()
+      -- Your DBUI configuration
+      vim.g.db_ui_use_nerd_fonts = 1
+    end,
   },
 
   -- NOTE: First, some plugins that don't require any configuration
@@ -107,7 +204,7 @@ require('lazy').setup({
       local paredit = require("nvim-paredit")
       require("parpar").setup {
         paredit = {
-          indent = {enabled = true},
+          indent = { enabled = true },
           -- pass any nvim-paredit options here
           keys = {
             -- custom bindings are automatically wrapped
@@ -311,7 +408,7 @@ require('lazy').setup({
         changedelete = { text = '~' },
       },
       on_attach = function(bufnr)
-        vim.keymap.set('n', '<leader>hp', require('gitsigns').preview_hunk, { buffer = bufnr, desc = 'Preview git hunk' })
+        vim.keymap.set('n', '<leader>gp', require('gitsigns').preview_hunk, { buffer = bufnr, desc = 'Preview git hunk' })
 
         -- don't override the built-in and fugitive keymaps
         local gs = package.loaded.gitsigns
@@ -398,10 +495,13 @@ require('lazy').setup({
     'nvim-treesitter/nvim-treesitter',
     dependencies = {
       'HiPhish/rainbow-delimiters.nvim',
+      'elixir-lang/tree-sitter-elixir',
       'nvim-treesitter/nvim-treesitter-textobjects',
     },
     build = ':TSUpdate',
   },
+
+  "jeffkreeftmeijer/vim-numbertoggle",
 
   -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
   --       These are some example plugins that I've included in the kickstart repository.
@@ -476,24 +576,24 @@ vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open float
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })
 
 -- Undo tree keymaps
-vim.keymap.set('n', '<leader><F5>', vim.cmd.UndotreeToggle)
+vim.keymap.set('n', '<leader><F5>', vim.cmd.UndotreeToggle, { desc = 'Toggle undo tree' })
 
 -- ParInfer keymaps
-vim.keymap.set('n', '<leader>pt', vim.cmd.ParinferToggle)
-vim.keymap.set({ 'n', 'v'}, '<leader>sk', vim.cmd.Screenkey)
+vim.keymap.set('n', '<leader>pt', vim.cmd.ParinferToggle, { desc = 'Toggle ParInfer' })
+vim.keymap.set({ 'n', 'v' }, '<leader>sk', vim.cmd.Screenkey, { desc = 'Toggle Screen Key' })
 
 -- quickfix list and vimgrep
 
-vim.keymap.set('n', ']q', vim.cmd.cnext)
-vim.keymap.set('n', '[q', vim.cmd.cprev)
-vim.keymap.set('n', ']Q', vim.cmd.cfirst)
-vim.keymap.set('n', '[Q', vim.cmd.clast)
-vim.keymap.set('n', ']l', vim.cmd.copen)
-vim.keymap.set('n', '[l', vim.cmd.cclose)
-vim.keymap.set('n', ']f', vim.cmd.cnfile)
-vim.keymap.set('n', '[f', vim.cmd.cpfile)
-vim.keymap.set('n', ']L', vim.cmd.cnewer)
-vim.keymap.set('n', '[L', vim.cmd.colder)
+vim.keymap.set('n', ']q', vim.cmd.cnext, { desc = 'Next quickfix' })
+vim.keymap.set('n', '[q', vim.cmd.cprev, { desc = 'Prev quickfix' })
+vim.keymap.set('n', ']Q', vim.cmd.cfirst, { desc = 'First quickfix' })
+vim.keymap.set('n', '[Q', vim.cmd.clast, { desc = 'Last quickfix' })
+vim.keymap.set('n', ']l', vim.cmd.copen, { desc = 'Open quickfix list' })
+vim.keymap.set('n', '[l', vim.cmd.cclose, { desc = 'Close quickfix list' })
+vim.keymap.set('n', ']f', vim.cmd.cnfile, { desc = 'Next file' })
+vim.keymap.set('n', '[f', vim.cmd.cpfile, { desc = 'Prev file' })
+vim.keymap.set('n', ']L', vim.cmd.cnewer, { desc = 'Next quickfix list' })
+vim.keymap.set('n', '[L', vim.cmd.colder, { desc = 'Prev quickfix list' })
 
 
 -- [[Configure Hop]]
@@ -506,10 +606,10 @@ local hop = require('hop')
 
 vim.keymap.set('', ';', function()
   hop.hint_patterns()
-end, {})
+end, { desc = 'Hop pattern' })
 vim.keymap.set('', '<leader>;', function()
   hop.hint_words()
-end, {})
+end, { desc = 'Hop words' })
 
 -- [[Configure Session Manager]]
 require("auto-session").setup {
@@ -612,12 +712,30 @@ vim.keymap.set('n', '<leader>sr', require('telescope.builtin').resume, { desc = 
 vim.defer_fn(function()
   require('nvim-treesitter.configs').setup {
     -- Add languages to be installed here that you want installed for treesitter
-    ensure_installed = { 'c', 'cpp', 'clojure', 'go', 'lua', 'python', 'rust', 'tsx', 'javascript', 'typescript', 'vimdoc', 'vim', 'bash' },
+    ensure_installed = {
+      'c',
+      'cpp',
+      'clojure',
+      'go',
+      'lua',
+      'python',
+      'rust',
+      'tsx',
+      'javascript',
+      'typescript',
+      'vimdoc',
+      'vim',
+      'bash',
+      'hurl',
+      'elixir',
+      'erlang'
+    },
 
     -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
-    auto_install = false,
+    auto_install = true,
 
     highlight = { enable = true },
+    additional_vim_regex_highlighting = true,
     indent = { enable = true },
     incremental_selection = {
       enable = true,
@@ -728,10 +846,10 @@ require('which-key').register {
   ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
   ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
   ['<leader>g'] = { name = '[G]it', _ = 'which_key_ignore' },
-  ['<leader>h'] = { name = 'More git', _ = 'which_key_ignore' },
   ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
   ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
   ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
+  ['<leader>h'] = { name = '[H]url/[H]ttp', _ = 'which_key_ignore' },
 }
 
 -- mason-lspconfig requires that these setup functions are called in this order
@@ -759,7 +877,11 @@ local servers = {
   -- pyright = {},
   -- rust_analyzer = {},
   tsserver = {},
-  html = { filetypes = { 'html', 'twig', 'hbs' } },
+  html = { filetypes = { 'html', 'twig', 'hbs', 'heex' } },
+  elixirls = {
+
+  },
+  gopls = {},
 
   lua_ls = {
     Lua = {
@@ -770,6 +892,7 @@ local servers = {
   zls = {},
   emmet_language_server = {},
   ols = { filetypes = { 'odin' } },
+  -- elp = {},
 
   cmake = {},
   -- CLOJURE
@@ -815,9 +938,18 @@ mason_lspconfig.setup_handlers {
 -- [[ Configure nvim-cmp ]]
 -- See `:help cmp`
 local cmp = require 'cmp'
+require('snippets')
 local luasnip = require 'luasnip'
-require('luasnip.loaders.from_vscode').lazy_load()
-luasnip.config.setup {}
+
+vim.keymap.set({"i"}, "<C-K>", function() luasnip.expand() end, {silent = true})
+vim.keymap.set({"i", "s"}, "<C-L>", function() luasnip.jump( 1) end, {silent = true})
+vim.keymap.set({"i", "s"}, "<C-J>", function() luasnip.jump(-1) end, {silent = true})
+
+vim.keymap.set({"i", "s"}, "<C-E>", function()
+	if luasnip.choice_active() then
+		luasnip.change_choice(1)
+	end
+end, {silent = true})
 
 cmp.setup {
   snippet = {
@@ -835,6 +967,7 @@ cmp.setup {
     ['<C-f>'] = cmp.mapping.scroll_docs(4),
     ['<C-Space>'] = cmp.mapping.complete {},
     ['<C-e>'] = cmp.mapping.abort(),
+    ['<C-o>'] = cmp.mapping.open_docs(),
     --[[ ['<C-CR>'] = cmp.mapping.confirm {
       behavior = cmp.ConfirmBehavior.Replace,
       select = false,
@@ -863,8 +996,8 @@ cmp.setup {
     }
   },
   sources = {
-    { name = 'nvim_lsp' },
     { name = 'luasnip' },
+    { name = 'nvim_lsp' },
     { name = 'conjure' },
   },
 }
@@ -875,6 +1008,7 @@ cmp.setup.filetype('markdown', { sources = {} })
 
 vim.opt.foldmethod = "expr"
 vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+vim.cmd("set nofoldenable")
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
