@@ -595,6 +595,9 @@ vim.keymap.set('n', '[f', vim.cmd.cpfile, { desc = 'Prev file' })
 vim.keymap.set('n', ']L', vim.cmd.cnewer, { desc = 'Next quickfix list' })
 vim.keymap.set('n', '[L', vim.cmd.colder, { desc = 'Prev quickfix list' })
 
+-- Diagnostic keymap
+vim.keymap.set('n', ']e', vim.diagnostic.goto_next)
+vim.keymap.set('n', '[e', vim.diagnostic.goto_prev)
 
 -- [[Configure Hop]]
 require('hop').setup {
