@@ -573,8 +573,8 @@ vim.keymap.set('n', ']L', vim.cmd.cnewer, { desc = 'Next quickfix list' })
 vim.keymap.set('n', '[L', vim.cmd.colder, { desc = 'Prev quickfix list' })
 
 -- Diagnostic keymap
-vim.keymap.set('n', ']e', vim.diagnostic.goto_next)
-vim.keymap.set('n', '[e', vim.diagnostic.goto_prev)
+vim.keymap.set('n', ']e', vim.diagnostic.goto_next, { desc = 'Goto next error' })
+vim.keymap.set('n', '[e', vim.diagnostic.goto_prev, { desc = 'Goto previous error' })
 
 -- [[Configure Hop]]
 require('hop').setup {
@@ -824,7 +824,7 @@ end
 
 -- document existing key chains
 require('which-key').register {
-  ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
+  ['<leader>c'] = { name = '[C]ode/[C]olumn', _ = 'which_key_ignore' },
   ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
   ['<leader>e'] = { name = '[E]valuate', _ = 'which_key_ignore' },
   ['<leader>l'] = { name = '[L]logs', _ = 'which_key_ignore' },
@@ -1012,6 +1012,7 @@ local column_width_excludes = {
 
 local column_width_default = 80
 local column_widths = {}
+local color_col_enabled = false
 setDefault(column_widths, column_width_default)
 
 local column_width_color_default = '#444455'
@@ -1043,15 +1044,23 @@ setDefault(column_width_colors, column_width_color_default)
 
 vim.cmd("set colorcolumn=" .. (column_width_default + 1))
 
-vim.api.nvim_create_autocmd({"WinEnter", "BufEnter"}, {
-  pattern = "*",
-  callback = function(ev)
+function SetColorColumn()
     for _, exclusion in ipairs(column_width_excludes) do
       if vim.bo.filetype == exclusion then
         -- hide the color column
+        vim.api.nvim_buf_set_var(0, "init_cc", 0)
         vim.cmd("let &colorcolumn = 0")
         return
       end
+    end
+    
+    if vim.fn.exists("b:init_cc") == 0 then
+      vim.api.nvim_buf_set_var(0, "init_cc", column_widths[vim.bo.filetype])
+    end
+
+    if color_col_enabled == false then
+      vim.cmd("let &colorcolumn = 0")
+      return
     end
 
     -- b:init_cc is a buffer-local variable for allowing only showing the
@@ -1069,19 +1078,51 @@ vim.api.nvim_create_autocmd({"WinEnter", "BufEnter"}, {
     local color = column_width_colors[vim.bo.filetype]
     local cmd2 = "hi ColorColumn guibg=" .. color
     vim.cmd(cmd2)
+end
+
+vim.api.nvim_create_autocmd({"WinEnter", "BufEnter"}, {
+  pattern = "*",
+  callback = function(ev)
+    SetColorColumn()
   end
 })
 
 -- Toggle and remove color column info when leaving a buffer
 vim.api.nvim_create_autocmd({"WinLeave", "BufLeave"} ,{
   pattern = "*",
-  callback = function(ev)
-    if vim.fn.exists("b:init_cc") == 0 then
-      vim.api.nvim_buf_set_var(0, "init_cc", column_widths[vim.bo.filetype])
-    end
+  callback = function(ev) 
     vim.cmd("let &colorcolumn = 0")
   end
 })
+
+-- shortcuts to toggle/enable/disable
+
+vim.keymap.set({'n', 'v'}, '<leader>ct', function()
+  if color_col_enabled then
+    color_col_enabled = false
+  else
+    color_col_enabled = true
+  end
+  SetColorColumn()
+end, { desc = '[T]oggle column width' })
+
+vim.keymap.set({'n', 'v'}, '<leader>cs', function()
+  if color_col_enabled then
+    color_col_enabled = false
+  else
+    color_col_enabled = true
+  end
+  SetColorColumn()
+end, { desc = '[S]how column width' })
+
+vim.keymap.set({'n', 'v'}, '<leader>ch', function()
+  if color_col_enabled then
+    color_col_enabled = false
+  else
+    color_col_enabled = true
+  end
+  SetColorColumn()
+end, { desc = '[H]ide column width' })
 
 -- Search counter in status bar
 if vim.v.hlsearch == 1 then
