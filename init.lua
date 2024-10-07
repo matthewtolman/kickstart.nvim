@@ -1042,7 +1042,7 @@ setDefault(column_width_colors, column_width_color_default)
 
 vim.cmd("set colorcolumn=" .. (column_width_default + 1))
 
-vim.api.nvim_create_autocmd({"BufEnter"}, {
+vim.api.nvim_create_autocmd({"WinEnter", "BufEnter"}, {
   pattern = "*",
   callback = function(ev)
     for _, exclusion in ipairs(column_width_excludes) do
@@ -1072,7 +1072,7 @@ vim.api.nvim_create_autocmd({"BufEnter"}, {
 })
 
 -- Toggle and remove color column info when leaving a buffer
-vim.api.nvim_create_autocmd({"BufLeave"} ,{
+vim.api.nvim_create_autocmd({"WinLeave", "BufLeave"} ,{
   pattern = "*",
   callback = function(ev)
     if vim.fn.exists("b:init_cc") == 0 then
