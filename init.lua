@@ -702,6 +702,7 @@ vim.defer_fn(function()
       'rust',
       'tsx',
       'javascript',
+      'json',
       'typescript',
       'vimdoc',
       'vim',
