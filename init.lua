@@ -89,6 +89,8 @@ require('lazy').setup({
   },
   -- images
   'edluffy/hologram.nvim',
+  -- coverage
+  'ruanyl/coverage.vim',
   -- Hurl (http testing)
   {
     "jellydn/hurl.nvim",
@@ -132,31 +134,6 @@ require('lazy').setup({
 
   -- Elixir,
   'elixir-editors/vim-elixir',
-  {
-    "scalameta/nvim-metals",
-    dependencies = {
-      "nvim-lua/plenary.nvim",
-    },
-    ft = { "scala", "sbt", "java" },
-    opts = function()
-      local metals_config = require("metals").bare_config()
-      metals_config.on_attach = function(client, bufnr)
-        -- your on_attach function
-      end
-
-      return metals_config
-    end,
-    config = function(self, metals_config)
-      local nvim_metals_group = vim.api.nvim_create_augroup("nvim-metals", { clear = true })
-      vim.api.nvim_create_autocmd("FileType", {
-        pattern = self.ft,
-        callback = function()
-          require("metals").initialize_or_attach(metals_config)
-        end,
-        group = nvim_metals_group,
-      })
-    end
-  },
 
   -- Screen Key
   {
@@ -848,11 +825,17 @@ end
 require('which-key').register {
   ['<leader>c'] = { name = '[C]ode', _ = 'which_key_ignore' },
   ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
+  ['<leader>e'] = { name = '[E]valuate', _ = 'which_key_ignore' },
+  ['<leader>l'] = { name = '[L]logs', _ = 'which_key_ignore' },
+  ['<leader>p'] = { name = '[P]arInfer', _ = 'which_key_ignore' },
+  ['<leader>t'] = { name = '[T]esting', _ = 'which_key_ignore' },
+  ['<leader>v'] = { name = '[V]iew', _ = 'which_key_ignore' },
   ['<leader>g'] = { name = '[G]it', _ = 'which_key_ignore' },
   ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-  ['<leader>s'] = { name = '[S]earch', _ = 'which_key_ignore' },
+  ['<leader>s'] = { name = '[S]earch/REPL [S]ession/[S]creen', _ = 'which_key_ignore' },
   ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
   ['<leader>h'] = { name = '[H]url/[H]ttp', _ = 'which_key_ignore' },
+  ['<leader>.'] = { name = 'More', _ = 'which_key_ignore' },
 }
 
 -- mason-lspconfig requires that these setup functions are called in this order
@@ -938,6 +921,8 @@ mason_lspconfig.setup_handlers {
   end,
 }
 
+--
+
 -- [[ Configure nvim-cmp ]]
 -- See `:help cmp`
 local cmp = require 'cmp'
@@ -1004,6 +989,110 @@ cmp.setup {
     { name = 'conjure' },
   },
 }
+
+-- column width indicators
+function setDefault (t, d)
+  local mt = {__index = function () return d end}
+  setmetatable(t, mt)
+end
+
+local column_width_excludes = {
+  'qf',
+  'man',
+  'md',
+  'help',
+  'checkhealth',
+  'lazy',
+  'packer',
+  'NvimTree',
+  'Telescope',
+  'WhichKey',
+}
+
+local column_width_default = 80
+local column_widths = {}
+setDefault(column_widths, column_width_default)
+
+local column_width_color_default = '#444455'
+local column_width_colors = {
+  ['zig'] = '#f69a1b',
+  ['javascript'] = '#f1f134',
+  ['cpp'] = '#519aba',
+  ['c++'] = '#519aba',
+  ['c'] = '#589eff',
+  ['rust'] = '#dea584',
+  ['erlang'] = '#b83998',
+  ['elixir'] = '#a075c4',
+  ['typescript'] = '#519aba',
+  ['lua'] = '#51a0cf',
+  ['clojure'] = '#8dc149',
+  ['java'] = '#c93d44',
+  ['kotlin'] = '#7f51ff',
+  ['cs'] = '#57640c',
+  ['sass'] = '#e8507f',
+  ['css'] = '#42a5f5',
+  ['html'] = '#e44d26',
+  ['python'] = '#ffbc05',
+  ['go'] = '#00a8d1',
+  ['json'] = '#bdbd3e',
+  ['toml'] = 'lightgrey',
+  ['yaml'] = 'grey',
+}
+setDefault(column_width_colors, column_width_color_default)
+
+vim.cmd("set colorcolumn=" .. (column_width_default + 1))
+
+vim.api.nvim_create_autocmd({"BufEnter"}, {
+  pattern = "*",
+  callback = function(ev)
+    for _, exclusion in ipairs(column_width_excludes) do
+      if vim.bo.filetype == exclusion then
+        -- hide the color column
+        vim.cmd("let &colorcolumn = 0")
+        return
+      end
+    end
+
+    -- b:init_cc is a buffer-local variable for allowing only showing the
+    -- color column in the *current* buffer
+    if vim.fn.exists("b:init_cc") ~= 0 then
+      vim.cmd("let &colorcolumn = b:init_cc")
+    else
+      -- Set the buffer info on initial load
+      local width = column_widths[vim.bo.filetype]
+      local cmd1 = "setlocal colorcolumn=" .. (width + 1)
+      vim.cmd(cmd1)
+    end
+
+    -- Adjust the column
+    local color = column_width_colors[vim.bo.filetype]
+    local cmd2 = "hi ColorColumn guibg=" .. color
+    vim.cmd(cmd2)
+  end
+})
+
+-- Toggle and remove color column info when leaving a buffer
+vim.api.nvim_create_autocmd({"BufLeave"} ,{
+  pattern = "*",
+  callback = function(ev)
+    if vim.fn.exists("b:init_cc") == 0 then
+      vim.api.nvim_buf_set_var(0, "init_cc", column_widths[vim.bo.filetype])
+    end
+    vim.cmd("let &colorcolumn = 0")
+  end
+})
+
+-- Search counter in status bar
+if vim.v.hlsearch == 1 then
+	local sinfo = vim.fn.searchcount { maxcount = 0 }
+	local search_stat = sinfo.incomplete > 0 and '[?/?]'
+		or sinfo.total > 0 and ('[%s/%s]'):format(sinfo.current, sinfo.total)
+		or nil
+
+	if search_stat ~= nil then
+		-- add search_stat to statusline/winbar
+	end
+end
 
 cmp.setup.filetype('markdown', { sources = {} })
 
