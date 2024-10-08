@@ -480,7 +480,7 @@ require('lazy').setup({
 
   {
     "matthewtolman/column-width.nvim",
-    opts = {}
+    opts = {enabled=true}
   },
 
   "jeffkreeftmeijer/vim-numbertoggle",
