@@ -478,6 +478,11 @@ require('lazy').setup({
     build = ':TSUpdate',
   },
 
+  {
+    "matthewtolman/column-width.nvim",
+    opts = {}
+  },
+
   "jeffkreeftmeijer/vim-numbertoggle",
 
   -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
@@ -990,139 +995,6 @@ cmp.setup {
     { name = 'conjure' },
   },
 }
-
--- column width indicators
-function setDefault (t, d)
-  local mt = {__index = function () return d end}
-  setmetatable(t, mt)
-end
-
-local column_width_excludes = {
-  'qf',
-  'man',
-  'md',
-  'help',
-  'checkhealth',
-  'lazy',
-  'packer',
-  'NvimTree',
-  'Telescope',
-  'WhichKey',
-}
-
-local column_width_default = 80
-local column_widths = {}
-local color_col_enabled = false
-setDefault(column_widths, column_width_default)
-
-local column_width_color_default = '#444455'
-local column_width_colors = {
-  ['zig'] = '#f69a1b',
-  ['javascript'] = '#f1f134',
-  ['cpp'] = '#519aba',
-  ['c++'] = '#519aba',
-  ['c'] = '#589eff',
-  ['rust'] = '#dea584',
-  ['erlang'] = '#b83998',
-  ['elixir'] = '#a075c4',
-  ['typescript'] = '#519aba',
-  ['lua'] = '#51a0cf',
-  ['clojure'] = '#8dc149',
-  ['java'] = '#c93d44',
-  ['kotlin'] = '#7f51ff',
-  ['cs'] = '#57640c',
-  ['sass'] = '#e8507f',
-  ['css'] = '#42a5f5',
-  ['html'] = '#e44d26',
-  ['python'] = '#ffbc05',
-  ['go'] = '#00a8d1',
-  ['json'] = '#bdbd3e',
-  ['toml'] = 'lightgrey',
-  ['yaml'] = 'grey',
-}
-setDefault(column_width_colors, column_width_color_default)
-
-vim.cmd("set colorcolumn=" .. (column_width_default + 1))
-
-function SetColorColumn()
-    for _, exclusion in ipairs(column_width_excludes) do
-      if vim.bo.filetype == exclusion then
-        -- hide the color column
-        vim.api.nvim_buf_set_var(0, "init_cc", 0)
-        vim.cmd("let &colorcolumn = 0")
-        return
-      end
-    end
-    
-    if vim.fn.exists("b:init_cc") == 0 then
-      vim.api.nvim_buf_set_var(0, "init_cc", column_widths[vim.bo.filetype])
-    end
-
-    if color_col_enabled == false then
-      vim.cmd("let &colorcolumn = 0")
-      return
-    end
-
-    -- b:init_cc is a buffer-local variable for allowing only showing the
-    -- color column in the *current* buffer
-    if vim.fn.exists("b:init_cc") ~= 0 then
-      vim.cmd("let &colorcolumn = b:init_cc")
-    else
-      -- Set the buffer info on initial load
-      local width = column_widths[vim.bo.filetype]
-      local cmd1 = "setlocal colorcolumn=" .. (width + 1)
-      vim.cmd(cmd1)
-    end
-
-    -- Adjust the column
-    local color = column_width_colors[vim.bo.filetype]
-    local cmd2 = "hi ColorColumn guibg=" .. color
-    vim.cmd(cmd2)
-end
-
-vim.api.nvim_create_autocmd({"WinEnter", "BufEnter"}, {
-  pattern = "*",
-  callback = function(ev)
-    SetColorColumn()
-  end
-})
-
--- Toggle and remove color column info when leaving a buffer
-vim.api.nvim_create_autocmd({"WinLeave", "BufLeave"} ,{
-  pattern = "*",
-  callback = function(ev) 
-    vim.cmd("let &colorcolumn = 0")
-  end
-})
-
--- shortcuts to toggle/enable/disable
-
-vim.keymap.set({'n', 'v'}, '<leader>ct', function()
-  if color_col_enabled then
-    color_col_enabled = false
-  else
-    color_col_enabled = true
-  end
-  SetColorColumn()
-end, { desc = '[T]oggle column width' })
-
-vim.keymap.set({'n', 'v'}, '<leader>cs', function()
-  if color_col_enabled then
-    color_col_enabled = false
-  else
-    color_col_enabled = true
-  end
-  SetColorColumn()
-end, { desc = '[S]how column width' })
-
-vim.keymap.set({'n', 'v'}, '<leader>ch', function()
-  if color_col_enabled then
-    color_col_enabled = false
-  else
-    color_col_enabled = true
-  end
-  SetColorColumn()
-end, { desc = '[H]ide column width' })
 
 -- Search counter in status bar
 if vim.v.hlsearch == 1 then
