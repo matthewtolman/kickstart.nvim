@@ -480,7 +480,11 @@ require('lazy').setup({
 
   {
     "matthewtolman/column-width.nvim",
-    opts = {enabled=true}
+    opts = {
+      enabled=true,
+      widths = {
+      },
+    }
   },
 
   "jeffkreeftmeijer/vim-numbertoggle",
@@ -851,9 +855,8 @@ require('mason-lspconfig').setup()
 
 -- [ Automatically Configure Dap ]
 require("mason-nvim-dap").setup({
-  ensure_installed = { "cppdbg" }
+  ensure_installed = { "cppdbg", "codelldb" }
 })
-
 
 -- Enable the following language servers
 --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
