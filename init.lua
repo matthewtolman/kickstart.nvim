@@ -87,6 +87,10 @@ require('lazy').setup({
     opts = {},
     cmd = {"Presenting"},
   },
+
+  -- visualize whitespace
+  'mcauley-penney/visual-whitespace.nvim',
+
   -- images
   'edluffy/hologram.nvim',
   -- coverage
@@ -474,6 +478,7 @@ require('lazy').setup({
       'HiPhish/rainbow-delimiters.nvim',
       'elixir-lang/tree-sitter-elixir',
       'nvim-treesitter/nvim-treesitter-textobjects',
+      'tree-sitter/tree-sitter-python',
     },
     build = ':TSUpdate',
   },
@@ -488,6 +493,8 @@ require('lazy').setup({
   },
 
   "jeffkreeftmeijer/vim-numbertoggle",
+
+  'mfussenegger/nvim-dap-python',
 
   -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
   --       These are some example plugins that I've included in the kickstart repository.
@@ -809,9 +816,9 @@ local on_attach = function(_, bufnr)
   nmap('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
   nmap('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
   nmap('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
-  nmap('<leader>D', require('telescope.builtin').lsp_type_definitions, 'Type [D]efinition')
-  nmap('<leader>ds', require('telescope.builtin').lsp_document_symbols, '[D]ocument [S]ymbols')
-  nmap('<leader>ws', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace [S]ymbols')
+  nmap('<leader>Lt', require('telescope.builtin').lsp_type_definitions, '[T]ype Definition')
+  nmap('<leader>Ld', require('telescope.builtin').lsp_document_symbols, '[D]ocument Symbols')
+  nmap('<leader>Lw', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace Symbols')
 
   -- See `:help K` for why this keymap
   nmap('K', vim.lsp.buf.hover, 'Hover Documentation')
@@ -831,32 +838,184 @@ local on_attach = function(_, bufnr)
   end, { desc = 'Format current buffer with LSP' })
 end
 
+-- [ Automatically Configure Dap ]
+require("mason-nvim-dap").setup({
+  ensure_installed = { "cppdbg", "codelldb" },
+  automatic_installation = true,
+  handlers = {
+    function(config)
+      require('mason-nvim-dap').default_setup(config)
+    end,
+    python = function(config)
+      config.adapters = {
+        type = "executable",
+        command = "python3",
+        args = {
+          "-m",
+          "debugpy.adapter",
+        },
+      }
+      require('mason-nvim-dap').default_setup(config)
+    end,
+  },
+})
+
+-- [manual dapaters]
+
+local dap = require('dap')
+dap.adapters.debugpy = {
+    type = "executable",
+    command = "python3",
+    args = {
+      "-m",
+      "debugpy.adapter",
+    },
+}
+
+-- [ dap commands ]
+
+local setup_dap = function()
+  local nmap = function(keys, func, desc)
+    vim.keymap.set('n', keys, func, {desc = desc})
+  end
+
+  nmap('<leader>db', function () require('dap').toggle_breakpoint() end, '[b]reakpoint')
+  nmap('<leader>dB', function () require('dap').list_breakpoints() end, 'List [B]reakpoints')
+  nmap('<leader>dC', function () require('dap').clear_breakpoints() end, '[C]lear Breakpoints')
+  nmap('<leader>dl', function () require('dap').continue() end, '[l]aunch')
+  nmap('<leader>dL', function () require('dap').run_last() end, 'Run [L]ast')
+  nmap('<leader>di', function () require('dap').step_into() end, 'Step [i]nto')
+  nmap('<leader>do', function () require('dap').step_over() end, 'Step [o]ver')
+  nmap('<leader>dO', function () require('dap').step_out() end, 'Step [O]out')
+  nmap('<leader>dR', function () require('dap').restart() end, '[R]estart')
+  nmap('<leader>dT', function () require('dap').terminate() end, '[T]erminate Session')
+  nmap('<leader>dL', function () require('dap.ext.vscode').load_launchjs(nil, {
+    debugpy = {'python'},
+    cppdbg = {'c', 'cpp'}
+  }) end, '[L]oad .vscode/launch.json')
+  nmap('<leader>dP', function () require('dap').pause() end, '[P]ause')
+  nmap('<leader>du', function () require('dap').up() end, '[u]p callstack')
+  nmap('<leader>dd', function () require('dap').down() end, '[d]own callstack')
+  nmap('<leader>dc', function () require('dap').run_to_cursor() end, 'run to [c]ursor')
+  nmap('<leader>d<space>', function () require('dap').status() end, 'Status')
+
+  nmap('<leader>dt', function ()
+    local widgets = require('dap.ui.widgets')
+    widgets.centered_float(widgets.threads)
+  end, '[t]hreads')
+ 
+  nmap('<leader>de', function ()
+    local widgets = require('dap.ui.widgets')
+    widgets.cursor_float(widgets.expression)
+  end, '[e]xpression')
+ 
+  nmap('<leader>ds', function ()
+    local widgets = require('dap.ui.widgets')
+    widgets.centered_float(widgets.sessions)
+  end, '[s]essions')
+
+  nmap('<leader>dS', function ()
+    local widgets = require('dap.ui.widgets')
+    widgets.centered_float(widgets.scopes)
+  end, '[S]copes')
+
+  nmap('<leader>dfl', function ()
+    local widgets = require('dap.ui.widgets')
+    widgets.centered_float(widgets.frames)
+  end, '[l]ist frames')
+
+  nmap('<leader>dff', function () require('dap').focus_frame() end, '[f]ocus frame')
+  nmap('<leader>dfr', function () require('dap').restart_frame() end, 'Restart [F]rame')
+
+  nmap('<leader>dtb', function () require('dap').step_out() end, 'step [b]ack')
+  nmap('<leader>dtc', function () require('dap').step_out() end, 'reverse [c]ontinue')
+  nmap('<leader>drt', function () require('dap').repl.toggle() end, 'REPL [t]oggle')
+  nmap('<leader>dro', function () require('dap').repl.open() end, 'REPL [o]pen')
+  nmap('<leader>dre', function () require('dap').repl.exit() end, 'REPL [e]xit')
+  nmap('<leader>drc', function () require('dap').repl.continue() end, 'REPL [c]ontinue')
+  nmap('<leader>drn', function () require('dap').repl.next() end, 'REPL [n]ext')
+  nmap('<leader>dri', function () require('dap').repl.into() end, 'REPL [i]nto')
+  nmap('<leader>dro', function () require('dap').repl.out() end, 'REPL [o]ut')
+  nmap('<leader>dru', function () require('dap').repl.up() end, 'REPL [u]p')
+  nmap('<leader>drd', function () require('dap').repl.down() end, 'REPL [d]own')
+  nmap('<leader>drs', function () require('dap').repl.scopes() end, 'REPL [s]copes')
+  nmap('<leader>drt', function () require('dap').repl.threads() end, 'REPL [t]hreads')
+  nmap('<leader>drf', function () require('dap').repl.frames() end, 'REPL [f]rames')
+end
+setup_dap()
+
+vim.keymap.set('n', "<leader><leader>vw", require('visual-whitespace').toggle, {desc="[V]iew [W]hitespace toggle"})
+
 -- document existing key chains
+-- [KEYMAP DOCS]
 require('which-key').register {
   ['<leader>c'] = { name = '[C]ode/[C]olumn', _ = 'which_key_ignore' },
-  ['<leader>d'] = { name = '[D]ocument', _ = 'which_key_ignore' },
+  ['<leader>d'] = { name = '[d]ebug', _ = 'which_key_ignore' },
+  ['<leader>dt'] = { name = '[d]ebug [t]imetravel', _ = 'which_key_ignore' },
+  ['<leader>dr'] = { name = '[d]ebug [r]repl', _ = 'which_key_ignore' },
+  ['<leader>df'] = { name = '[d]ebug [f]rames', _ = 'which_key_ignore' },
+  ['<leader>L'] = { name = '[L]SP', _ = 'which_key_ignore' },
   ['<leader>e'] = { name = '[E]valuate', _ = 'which_key_ignore' },
-  ['<leader>l'] = { name = '[L]logs', _ = 'which_key_ignore' },
+  ['<leader>l'] = { name = '[L]ogs', _ = 'which_key_ignore' },
   ['<leader>p'] = { name = '[P]arInfer', _ = 'which_key_ignore' },
   ['<leader>t'] = { name = '[T]esting', _ = 'which_key_ignore' },
-  ['<leader>v'] = { name = '[V]iew', _ = 'which_key_ignore' },
   ['<leader>g'] = { name = '[G]it', _ = 'which_key_ignore' },
   ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
   ['<leader>s'] = { name = '[S]earch/REPL [S]ession/[S]creen', _ = 'which_key_ignore' },
   ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
   ['<leader>h'] = { name = '[H]url/[H]ttp', _ = 'which_key_ignore' },
-  ['<leader>.'] = { name = 'More', _ = 'which_key_ignore' },
+  ['<leader><leader>'] = { name = 'More', _ = 'which_key_ignore' },
+
+  ['v['] = { name = 'Select Previous', _ = 'which_key_ignore' },
+  ['v[%'] = { name = 'Smart Select Previous', _ = 'which_key_ignore' },
+  ['v]'] = { name = 'Select Next', _ = 'which_key_ignore' },
+  ['v]%'] = { name = 'Smart Select Next', _ = 'which_key_ignore' },
+  ['v<leader>'] = { name = 'Hop Select', _ = 'which_key_ignore' },
+  ['vg'] = { name = 'File Select', _ = 'which_key_ignore' },
+  
+  ['d['] = { name = 'Delete Previous', _ = 'which_key_ignore' },
+  ['d[%'] = { name = 'Smart Delete Previous', _ = 'which_key_ignore' },
+  ['d]'] = { name = 'Delete Next', _ = 'which_key_ignore' },
+  ['d]%'] = { name = 'Smart Delete Next', _ = 'which_key_ignore' },
+  ['d<leader>'] = { name = 'Hop Delete', _ = 'which_key_ignore' },
+  ['dg'] = { name = 'File Delete', _ = 'which_key_ignore' },
+  
+  ['y['] = { name = 'Yank Previous', _ = 'which_key_ignore' },
+  ['y[%'] = { name = 'Smart Yank Previous', _ = 'which_key_ignore' },
+  ['y]'] = { name = 'Yank Next', _ = 'which_key_ignore' },
+  ['y]%'] = { name = 'Smart Yank Next', _ = 'which_key_ignore' },
+  ['y<leader>'] = { name = 'Hop Yank', _ = 'which_key_ignore' },
+  ['yg'] = { name = 'File Yank', _ = 'which_key_ignore' },
+  
+  ['c['] = { name = 'Change Previous', _ = 'which_key_ignore' },
+  ['c[%'] = { name = 'Smart Change Previous', _ = 'which_key_ignore' },
+  ['c]'] = { name = 'Change Next', _ = 'which_key_ignore' },
+  ['c]%'] = { name = 'Smart Change Next', _ = 'which_key_ignore' },
+  ['c<leader>'] = { name = 'Hop Change', _ = 'which_key_ignore' },
+  ['cg'] = { name = 'File Change', _ = 'which_key_ignore' },
+  
+  ['>['] = { name = 'Indent Previous', _ = 'which_key_ignore' },
+  ['>[%'] = { name = 'Smart Indent Previous', _ = 'which_key_ignore' },
+  ['>]'] = { name = 'Indent Next', _ = 'which_key_ignore' },
+  ['>]%'] = { name = 'Smart Indent Next', _ = 'which_key_ignore' },
+  ['><leader>'] = { name = 'Hop Indent', _ = 'which_key_ignore' },
+  ['>g'] = { name = 'File Indent', _ = 'which_key_ignore' },
+  
+  ['<['] = { name = 'DeIndent Previous', _ = 'which_key_ignore' },
+  ['<[%'] = { name = 'Smart DeIndent Previous', _ = 'which_key_ignore' },
+  ['<]'] = { name = 'DeIndent Next', _ = 'which_key_ignore' },
+  ['<]%'] = { name = 'Smart DeIndent Next', _ = 'which_key_ignore' },
+  ['<<leader>'] = { name = 'Hop DeIndent', _ = 'which_key_ignore' },
+  ['<g'] = { name = 'File DeIndent', _ = 'which_key_ignore' },
+
+  ['[o'] = { name = 'Soft wrap', _ = 'which_key_ignore' },
+  [']o'] = { name = 'Hard wrap', _ = 'which_key_ignore' },
 }
 
 -- mason-lspconfig requires that these setup functions are called in this order
 -- before setting up the servers.
 require('mason').setup()
 require('mason-lspconfig').setup()
-
--- [ Automatically Configure Dap ]
-require("mason-nvim-dap").setup({
-  ensure_installed = { "cppdbg", "codelldb" }
-})
 
 -- Enable the following language servers
 --  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
@@ -965,28 +1124,6 @@ cmp.setup {
     ['<C-Space>'] = cmp.mapping.complete {},
     ['<C-e>'] = cmp.mapping.abort(),
     ['<C-o>'] = cmp.mapping.open_docs(),
-    --[[ ['<C-CR>'] = cmp.mapping.confirm {
-      behavior = cmp.ConfirmBehavior.Replace,
-      select = false,
-    },
-    ['<Tab>'] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_next_item()
-      elseif luasnip.expand_or_locally_jumpable() then
-        luasnip.expand_or_jump()
-      else
-        fallback()
-      end
-    end, { 'i', 's' }),
-    ['<S-Tab>'] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_prev_item()
-      elseif luasnip.locally_jumpable(-1) then
-        luasnip.jump(-1)
-      else
-        fallback()
-      end
-    end, { 'i', 's' }), ]]--
     ['<Tab>'] = cmp.mapping.confirm {
       behavior = cmp.ConfirmBehavior.Replace,
       select = false,
