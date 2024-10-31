@@ -85,7 +85,7 @@ require('lazy').setup({
   {
     "sotte/presenting.nvim",
     opts = {},
-    cmd = {"Presenting"},
+    cmd = { "Presenting" },
   },
 
   -- visualize whitespace
@@ -99,9 +99,9 @@ require('lazy').setup({
   {
     "jellydn/hurl.nvim",
     dependencies = {
-        "MunifTanjim/nui.nvim",
-        "nvim-lua/plenary.nvim",
-        "nvim-treesitter/nvim-treesitter"
+      "MunifTanjim/nui.nvim",
+      "nvim-lua/plenary.nvim",
+      "nvim-treesitter/nvim-treesitter"
     },
     ft = "hurl",
     opts = {
@@ -115,7 +115,7 @@ require('lazy').setup({
       formatters = {
         json = { 'jq' }, -- Make sure you have install jq in your system, e.g: brew install jq
         html = {
-          'prettier', -- Make sure you have install prettier in your system, e.g: npm install -g prettier
+          'prettier',    -- Make sure you have install prettier in your system, e.g: npm install -g prettier
           '--parser',
           'html',
         },
@@ -123,13 +123,13 @@ require('lazy').setup({
     },
     keys = {
       -- Run API request
-      { "<leader>hA", "<cmd>HurlRunner<CR>", desc = "Run All requests" },
-      { "<leader>ha", "<cmd>HurlRunnerAt<CR>", desc = "Run Api request" },
+      { "<leader>hA", "<cmd>HurlRunner<CR>",        desc = "Run All requests" },
+      { "<leader>ha", "<cmd>HurlRunnerAt<CR>",      desc = "Run Api request" },
       { "<leader>he", "<cmd>HurlRunnerToEntry<CR>", desc = "Run Api request to entry" },
-      { "<leader>hm", "<cmd>HurlToggleMode<CR>", desc = "Hurl Toggle Mode" },
-      { "<leader>hv", "<cmd>HurlVerbose<CR>", desc = "Run Api in verbose mode" },
+      { "<leader>hm", "<cmd>HurlToggleMode<CR>",    desc = "Hurl Toggle Mode" },
+      { "<leader>hv", "<cmd>HurlVerbose<CR>",       desc = "Run Api in verbose mode" },
       -- Run Hurl request in visual mode
-      { "<leader>hh", ":HurlRunner<CR>", desc = "Hurl Runner", mode = "v" },
+      { "<leader>hh", ":HurlRunner<CR>",            desc = "Hurl Runner",             mode = "v" },
     },
   },
 
@@ -415,6 +415,20 @@ require('lazy').setup({
     },
   },
 
+  -- Bookmarks
+  {
+    'otavioschwanck/arrow.nvim',
+    dependencies = {
+      { 'nvim-tree/nvim-web-devicons' },
+    },
+    opts = {
+      show_icons = true,
+      always_show_path = true,
+      leader_key = '<leader>m',
+      buffer_leader_key = '<localleader>b',
+    },
+  },
+
   {
     -- Theme inspired by Atom
     'navarasu/onedark.nvim',
@@ -428,14 +442,32 @@ require('lazy').setup({
     -- Set lualine as statusline
     'nvim-lualine/lualine.nvim',
     -- See `:help lualine.txt`
-    opts = {
-      options = {
-        icons_enabled = false,
-        theme = 'onedark',
-        component_separators = '|',
-        section_separators = '',
-      },
-    },
+
+    config = function()
+      require('lualine').setup({
+        options = {
+          theme = 'onedark',
+          component_separators = '|',
+        },
+        sections = {
+          lualine_c = {
+            '%{expand(\'%:~:.\')}',
+            function()
+              local buff = require('arrow.buffer_persist').get_bookmarks_by()
+              if #buff > 0 then
+                return "≣ " .. #buff
+              else
+                return ""
+              end
+            end,
+            function()
+              return require('arrow.statusline').text_for_statusline_with_icons(nil)
+            end,
+          },
+          lualine_x = { 'encoding', 'fileformat', 'filetype' },
+        },
+      })
+    end,
   },
 
   {
@@ -486,7 +518,7 @@ require('lazy').setup({
   {
     "matthewtolman/column-width.nvim",
     opts = {
-      enabled=true,
+      enabled = true,
       widths = {
       },
     }
@@ -562,11 +594,22 @@ vim.keymap.set({ 'n', 'v' }, '<Space>', '<Nop>', { silent = true })
 vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 
+-- arrow bookmarks
+vim.keymap.set('n', '[b', require('arrow.commands').commands.prev_buffer_bookmark,
+  { desc = 'Previous [b]uffer bookmark' })
+vim.keymap.set('n', ']b', require('arrow.commands').commands.next_buffer_bookmark, { desc = 'Next [b]uffer bookmark' })
+vim.keymap.set('n', '[B', require('arrow.persist').next, { desc = 'Previous File [B]ookmark' })
+vim.keymap.set('n', ']B', require('arrow.persist').previous, { desc = 'Next File [B]ookmak' })
+
 -- Diagnostic keymaps
 vim.keymap.set('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic message' })
 vim.keymap.set('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic message' })
 vim.keymap.set('n', '<leader>e', vim.diagnostic.open_float, { desc = 'Open floating diagnostic message' })
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostics list' })
+
+-- Remap for paste/delete without yank
+vim.keymap.set('v', '<leader>p', '"_dP', { remap = true, desc = '[P]aste (no yank)' })
+vim.keymap.set('v', '<leader>d', '"_d', { remap = true, desc = '[D]elete (no yank)' })
 
 -- Undo tree keymaps
 vim.keymap.set('n', '<leader><F5>', vim.cmd.UndotreeToggle, { desc = 'Toggle undo tree' })
@@ -864,87 +907,89 @@ require("mason-nvim-dap").setup({
 
 local dap = require('dap')
 dap.adapters.debugpy = {
-    type = "executable",
-    command = "python3",
-    args = {
-      "-m",
-      "debugpy.adapter",
-    },
+  type = "executable",
+  command = "python3",
+  args = {
+    "-m",
+    "debugpy.adapter",
+  },
 }
 
 -- [ dap commands ]
 
 local setup_dap = function()
   local nmap = function(keys, func, desc)
-    vim.keymap.set('n', keys, func, {desc = desc})
+    vim.keymap.set('n', keys, func, { desc = desc })
   end
 
-  nmap('<leader>db', function () require('dap').toggle_breakpoint() end, '[b]reakpoint')
-  nmap('<leader>dB', function () require('dap').list_breakpoints() end, 'List [B]reakpoints')
-  nmap('<leader>dC', function () require('dap').clear_breakpoints() end, '[C]lear Breakpoints')
-  nmap('<leader>dl', function () require('dap').continue() end, '[l]aunch')
-  nmap('<leader>dL', function () require('dap').run_last() end, 'Run [L]ast')
-  nmap('<leader>di', function () require('dap').step_into() end, 'Step [i]nto')
-  nmap('<leader>do', function () require('dap').step_over() end, 'Step [o]ver')
-  nmap('<leader>dO', function () require('dap').step_out() end, 'Step [O]out')
-  nmap('<leader>dR', function () require('dap').restart() end, '[R]estart')
-  nmap('<leader>dT', function () require('dap').terminate() end, '[T]erminate Session')
-  nmap('<leader>dL', function () require('dap.ext.vscode').load_launchjs(nil, {
-    debugpy = {'python'},
-    cppdbg = {'c', 'cpp'}
-  }) end, '[L]oad .vscode/launch.json')
-  nmap('<leader>dP', function () require('dap').pause() end, '[P]ause')
-  nmap('<leader>du', function () require('dap').up() end, '[u]p callstack')
-  nmap('<leader>dd', function () require('dap').down() end, '[d]own callstack')
-  nmap('<leader>dc', function () require('dap').run_to_cursor() end, 'run to [c]ursor')
-  nmap('<leader>d<space>', function () require('dap').status() end, 'Status')
+  nmap('<leader>db', function() require('dap').toggle_breakpoint() end, '[b]reakpoint')
+  nmap('<leader>dB', function() require('dap').list_breakpoints() end, 'List [B]reakpoints')
+  nmap('<leader>dC', function() require('dap').clear_breakpoints() end, '[C]lear Breakpoints')
+  nmap('<leader>dl', function() require('dap').continue() end, '[l]aunch')
+  nmap('<leader>dL', function() require('dap').run_last() end, 'Run [L]ast')
+  nmap('<leader>di', function() require('dap').step_into() end, 'Step [i]nto')
+  nmap('<leader>do', function() require('dap').step_over() end, 'Step [o]ver')
+  nmap('<leader>dO', function() require('dap').step_out() end, 'Step [O]out')
+  nmap('<leader>dR', function() require('dap').restart() end, '[R]estart')
+  nmap('<leader>dT', function() require('dap').terminate() end, '[T]erminate Session')
+  nmap('<leader>dL', function()
+    require('dap.ext.vscode').load_launchjs(nil, {
+      debugpy = { 'python' },
+      cppdbg = { 'c', 'cpp' }
+    })
+  end, '[L]oad .vscode/launch.json')
+  nmap('<leader>dP', function() require('dap').pause() end, '[P]ause')
+  nmap('<leader>du', function() require('dap').up() end, '[u]p callstack')
+  nmap('<leader>dd', function() require('dap').down() end, '[d]own callstack')
+  nmap('<leader>dc', function() require('dap').run_to_cursor() end, 'run to [c]ursor')
+  nmap('<leader>d<space>', function() require('dap').status() end, 'Status')
 
-  nmap('<leader>dt', function ()
+  nmap('<leader>dt', function()
     local widgets = require('dap.ui.widgets')
     widgets.centered_float(widgets.threads)
   end, '[t]hreads')
- 
-  nmap('<leader>de', function ()
+
+  nmap('<leader>de', function()
     local widgets = require('dap.ui.widgets')
     widgets.cursor_float(widgets.expression)
   end, '[e]xpression')
- 
-  nmap('<leader>ds', function ()
+
+  nmap('<leader>ds', function()
     local widgets = require('dap.ui.widgets')
     widgets.centered_float(widgets.sessions)
   end, '[s]essions')
 
-  nmap('<leader>dS', function ()
+  nmap('<leader>dS', function()
     local widgets = require('dap.ui.widgets')
     widgets.centered_float(widgets.scopes)
   end, '[S]copes')
 
-  nmap('<leader>dfl', function ()
+  nmap('<leader>dfl', function()
     local widgets = require('dap.ui.widgets')
     widgets.centered_float(widgets.frames)
   end, '[l]ist frames')
 
-  nmap('<leader>dff', function () require('dap').focus_frame() end, '[f]ocus frame')
-  nmap('<leader>dfr', function () require('dap').restart_frame() end, 'Restart [F]rame')
+  nmap('<leader>dff', function() require('dap').focus_frame() end, '[f]ocus frame')
+  nmap('<leader>dfr', function() require('dap').restart_frame() end, 'Restart [F]rame')
 
-  nmap('<leader>dtb', function () require('dap').step_out() end, 'step [b]ack')
-  nmap('<leader>dtc', function () require('dap').step_out() end, 'reverse [c]ontinue')
-  nmap('<leader>drt', function () require('dap').repl.toggle() end, 'REPL [t]oggle')
-  nmap('<leader>dro', function () require('dap').repl.open() end, 'REPL [o]pen')
-  nmap('<leader>dre', function () require('dap').repl.exit() end, 'REPL [e]xit')
-  nmap('<leader>drc', function () require('dap').repl.continue() end, 'REPL [c]ontinue')
-  nmap('<leader>drn', function () require('dap').repl.next() end, 'REPL [n]ext')
-  nmap('<leader>dri', function () require('dap').repl.into() end, 'REPL [i]nto')
-  nmap('<leader>dro', function () require('dap').repl.out() end, 'REPL [o]ut')
-  nmap('<leader>dru', function () require('dap').repl.up() end, 'REPL [u]p')
-  nmap('<leader>drd', function () require('dap').repl.down() end, 'REPL [d]own')
-  nmap('<leader>drs', function () require('dap').repl.scopes() end, 'REPL [s]copes')
-  nmap('<leader>drt', function () require('dap').repl.threads() end, 'REPL [t]hreads')
-  nmap('<leader>drf', function () require('dap').repl.frames() end, 'REPL [f]rames')
+  nmap('<leader>dtb', function() require('dap').step_out() end, 'step [b]ack')
+  nmap('<leader>dtc', function() require('dap').step_out() end, 'reverse [c]ontinue')
+  nmap('<leader>drt', function() require('dap').repl.toggle() end, 'REPL [t]oggle')
+  nmap('<leader>dro', function() require('dap').repl.open() end, 'REPL [o]pen')
+  nmap('<leader>dre', function() require('dap').repl.exit() end, 'REPL [e]xit')
+  nmap('<leader>drc', function() require('dap').repl.continue() end, 'REPL [c]ontinue')
+  nmap('<leader>drn', function() require('dap').repl.next() end, 'REPL [n]ext')
+  nmap('<leader>dri', function() require('dap').repl.into() end, 'REPL [i]nto')
+  nmap('<leader>dro', function() require('dap').repl.out() end, 'REPL [o]ut')
+  nmap('<leader>dru', function() require('dap').repl.up() end, 'REPL [u]p')
+  nmap('<leader>drd', function() require('dap').repl.down() end, 'REPL [d]own')
+  nmap('<leader>drs', function() require('dap').repl.scopes() end, 'REPL [s]copes')
+  nmap('<leader>drt', function() require('dap').repl.threads() end, 'REPL [t]hreads')
+  nmap('<leader>drf', function() require('dap').repl.frames() end, 'REPL [f]rames')
 end
 setup_dap()
 
-vim.keymap.set('n', "<leader><leader>vw", require('visual-whitespace').toggle, {desc="[V]iew [W]hitespace toggle"})
+vim.keymap.set('n', "<leader><leader>vw", require('visual-whitespace').toggle, { desc = "[V]iew [W]hitespace toggle" })
 
 -- document existing key chains
 -- [KEYMAP DOCS]
@@ -955,6 +1000,8 @@ require('which-key').register {
   ['<leader>dr'] = { name = '[d]ebug [r]repl', _ = 'which_key_ignore' },
   ['<leader>df'] = { name = '[d]ebug [f]rames', _ = 'which_key_ignore' },
   ['<leader>L'] = { name = '[L]SP', _ = 'which_key_ignore' },
+  ['<leader>b'] = { name = '[b]ookmark', _ = 'which_key_ignore' },
+  ['<leader>m'] = { name = 'File book[m]ark', _ = 'which_key_ignore' },
   ['<leader>e'] = { name = '[E]valuate', _ = 'which_key_ignore' },
   ['<leader>l'] = { name = '[L]ogs', _ = 'which_key_ignore' },
   ['<leader>p'] = { name = '[P]arInfer', _ = 'which_key_ignore' },
@@ -972,35 +1019,35 @@ require('which-key').register {
   ['v]%'] = { name = 'Smart Select Next', _ = 'which_key_ignore' },
   ['v<leader>'] = { name = 'Hop Select', _ = 'which_key_ignore' },
   ['vg'] = { name = 'File Select', _ = 'which_key_ignore' },
-  
+
   ['d['] = { name = 'Delete Previous', _ = 'which_key_ignore' },
   ['d[%'] = { name = 'Smart Delete Previous', _ = 'which_key_ignore' },
   ['d]'] = { name = 'Delete Next', _ = 'which_key_ignore' },
   ['d]%'] = { name = 'Smart Delete Next', _ = 'which_key_ignore' },
   ['d<leader>'] = { name = 'Hop Delete', _ = 'which_key_ignore' },
   ['dg'] = { name = 'File Delete', _ = 'which_key_ignore' },
-  
+
   ['y['] = { name = 'Yank Previous', _ = 'which_key_ignore' },
   ['y[%'] = { name = 'Smart Yank Previous', _ = 'which_key_ignore' },
   ['y]'] = { name = 'Yank Next', _ = 'which_key_ignore' },
   ['y]%'] = { name = 'Smart Yank Next', _ = 'which_key_ignore' },
   ['y<leader>'] = { name = 'Hop Yank', _ = 'which_key_ignore' },
   ['yg'] = { name = 'File Yank', _ = 'which_key_ignore' },
-  
+
   ['c['] = { name = 'Change Previous', _ = 'which_key_ignore' },
   ['c[%'] = { name = 'Smart Change Previous', _ = 'which_key_ignore' },
   ['c]'] = { name = 'Change Next', _ = 'which_key_ignore' },
   ['c]%'] = { name = 'Smart Change Next', _ = 'which_key_ignore' },
   ['c<leader>'] = { name = 'Hop Change', _ = 'which_key_ignore' },
   ['cg'] = { name = 'File Change', _ = 'which_key_ignore' },
-  
+
   ['>['] = { name = 'Indent Previous', _ = 'which_key_ignore' },
   ['>[%'] = { name = 'Smart Indent Previous', _ = 'which_key_ignore' },
   ['>]'] = { name = 'Indent Next', _ = 'which_key_ignore' },
   ['>]%'] = { name = 'Smart Indent Next', _ = 'which_key_ignore' },
   ['><leader>'] = { name = 'Hop Indent', _ = 'which_key_ignore' },
   ['>g'] = { name = 'File Indent', _ = 'which_key_ignore' },
-  
+
   ['<['] = { name = 'DeIndent Previous', _ = 'which_key_ignore' },
   ['<[%'] = { name = 'Smart DeIndent Previous', _ = 'which_key_ignore' },
   ['<]'] = { name = 'DeIndent Next', _ = 'which_key_ignore' },
@@ -1097,15 +1144,15 @@ local cmp = require 'cmp'
 require('snippets')
 local luasnip = require 'luasnip'
 
-vim.keymap.set({"i"}, "<C-K>", function() luasnip.expand() end, {silent = true})
-vim.keymap.set({"i", "s"}, "<C-L>", function() luasnip.jump( 1) end, {silent = true})
-vim.keymap.set({"i", "s"}, "<C-J>", function() luasnip.jump(-1) end, {silent = true})
+vim.keymap.set({ "i" }, "<C-K>", function() luasnip.expand() end, { silent = true })
+vim.keymap.set({ "i", "s" }, "<C-L>", function() luasnip.jump(1) end, { silent = true })
+vim.keymap.set({ "i", "s" }, "<C-J>", function() luasnip.jump(-1) end, { silent = true })
 
-vim.keymap.set({"i", "s"}, "<C-E>", function()
-	if luasnip.choice_active() then
-		luasnip.change_choice(1)
-	end
-end, {silent = true})
+vim.keymap.set({ "i", "s" }, "<C-E>", function()
+  if luasnip.choice_active() then
+    luasnip.change_choice(1)
+  end
+end, { silent = true })
 
 cmp.setup {
   snippet = {
@@ -1138,14 +1185,14 @@ cmp.setup {
 
 -- Search counter in status bar
 if vim.v.hlsearch == 1 then
-	local sinfo = vim.fn.searchcount { maxcount = 0 }
-	local search_stat = sinfo.incomplete > 0 and '[?/?]'
-		or sinfo.total > 0 and ('[%s/%s]'):format(sinfo.current, sinfo.total)
-		or nil
+  local sinfo = vim.fn.searchcount { maxcount = 0 }
+  local search_stat = sinfo.incomplete > 0 and '[?/?]'
+      or sinfo.total > 0 and ('[%s/%s]'):format(sinfo.current, sinfo.total)
+      or nil
 
-	if search_stat ~= nil then
-		-- add search_stat to statusline/winbar
-	end
+  if search_stat ~= nil then
+    -- add search_stat to statusline/winbar
+  end
 end
 
 cmp.setup.filetype('markdown', { sources = {} })
