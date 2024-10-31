@@ -451,7 +451,7 @@ require('lazy').setup({
         },
         sections = {
           lualine_c = {
-            '%{expand(\'%:~:.\')}',
+            {'filename', path = 3, newfile_status = true},
             function()
               local buff = require('arrow.buffer_persist').get_bookmarks_by()
               if #buff > 0 then
