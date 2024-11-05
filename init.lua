@@ -426,6 +426,7 @@ require('lazy').setup({
       always_show_path = true,
       leader_key = '<leader>m',
       buffer_leader_key = '<localleader>b',
+      separate_save_and_remove = true,
     },
   },
 
@@ -449,9 +450,10 @@ require('lazy').setup({
           theme = 'onedark',
           component_separators = '|',
         },
+        extensions = {'quickfix', 'nvim-tree', 'mason', 'lazy', 'nvim-dap-ui'},
         sections = {
           lualine_c = {
-            {'filename', path = 3, newfile_status = true},
+            'filename',
             function()
               local buff = require('arrow.buffer_persist').get_bookmarks_by()
               if #buff > 0 then
@@ -464,8 +466,13 @@ require('lazy').setup({
               return require('arrow.statusline').text_for_statusline_with_icons(nil)
             end,
           },
-          lualine_x = { 'encoding', 'fileformat', 'filetype' },
+          lualine_x = { {'encoding', show_bomb = true}, 'fileformat',  },
         },
+        tabline = {
+          lualine_b = {{'filename', path = 3, newfile_status = true, shorting_target = 60}, },
+          lualine_c = {{'filetype', icon = {align = 'right'}}, quickfix},
+          lualine_y = {{'datetime', style='%H:%M:%S'}},
+        }
       })
     end,
   },
