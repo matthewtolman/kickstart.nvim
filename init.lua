@@ -1097,7 +1097,6 @@ local servers = {
       telemetry = { enable = false },
     },
   },
-  zls = {},
   emmet_language_server = {},
   ols = { filetypes = { 'odin' } },
   -- elp = {},
@@ -1141,6 +1140,19 @@ mason_lspconfig.setup_handlers {
       filetypes = (servers[server_name] or {}).filetypes,
     }
   end,
+}
+
+-- Manual lsp config
+local lspconfig = require('lspconfig')
+lspconfig.zls.setup {
+  comd = {vim.fn.exepath('zls')},
+  settings = {
+    zls = {
+      zig_exe_path =  os.getenv("HOME") .. "/zig/master/files/zig",
+      warn_style = true,
+      highlight_global_var_declarations = true,
+    }
+  }
 }
 
 --
