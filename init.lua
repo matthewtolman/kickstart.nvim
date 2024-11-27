@@ -860,27 +860,39 @@ local on_attach = function(_, bufnr)
     vim.keymap.set('n', keys, func, { buffer = bufnr, desc = desc })
   end
 
-  nmap('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
+  nmap('<leader>rn', vim.lsp.buf.rename, '[r]e[n]ame')
+  nmap('<leader>fr', vim.lsp.buf.rename, '[r]ename')
+  nmap('<leader>fc', vim.lsp.buf.code_action, '[c]ode Action')
   nmap('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
 
   nmap('gd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
   nmap('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
   nmap('gI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
-  nmap('<leader>Lt', require('telescope.builtin').lsp_type_definitions, '[T]ype Definition')
-  nmap('<leader>Ld', require('telescope.builtin').lsp_document_symbols, '[D]ocument Symbols')
-  nmap('<leader>Lw', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace Symbols')
+  
+  nmap('<leader>fgd', require('telescope.builtin').lsp_definitions, '[G]oto [D]efinition')
+  nmap('<leader>fgr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
+  nmap('<leader>fgI', require('telescope.builtin').lsp_implementations, '[G]oto [I]mplementation')
+  nmap('<leader>ft', require('telescope.builtin').lsp_type_definitions, '[T]ype Definition')
+  nmap('<leader>fd', require('telescope.builtin').lsp_document_symbols, '[D]ocument Symbols')
+  nmap('<leader>fw', require('telescope.builtin').lsp_dynamic_workspace_symbols, '[W]orkspace Symbols')
 
   -- See `:help K` for why this keymap
   nmap('K', vim.lsp.buf.hover, 'Hover Documentation')
+  nmap('<leader>fh', vim.lsp.buf.hover, 'Hover Documentation')
   nmap('<C-k>', vim.lsp.buf.signature_help, 'Signature Documentation')
+  nmap('<leader>fs', vim.lsp.buf.signature_help, 'Signature Documentation')
 
   -- Lesser used LSP functionality
   nmap('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
+  nmap('<leader>fgD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
+
   nmap('<leader>wa', vim.lsp.buf.add_workspace_folder, '[W]orkspace [A]dd Folder')
   nmap('<leader>wr', vim.lsp.buf.remove_workspace_folder, '[W]orkspace [R]emove Folder')
   nmap('<leader>wl', function()
     print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
   end, '[W]orkspace [L]ist Folders')
+
+  nmap('<leader>ff', vim.lsp.buf.format, '[F]ormat buffer')
 
   -- Create a command `:Format` local to the LSP buffer
   vim.api.nvim_buf_create_user_command(bufnr, 'Format', function(_)
@@ -1006,7 +1018,7 @@ require('which-key').register {
   ['<leader>dt'] = { name = '[d]ebug [t]imetravel', _ = 'which_key_ignore' },
   ['<leader>dr'] = { name = '[d]ebug [r]repl', _ = 'which_key_ignore' },
   ['<leader>df'] = { name = '[d]ebug [f]rames', _ = 'which_key_ignore' },
-  ['<leader>L'] = { name = '[L]SP', _ = 'which_key_ignore' },
+  ['<leader>f'] = { name = 'LSP', _ = 'which_key_ignore' },
   ['<leader>b'] = { name = '[b]ookmark', _ = 'which_key_ignore' },
   ['<leader>m'] = { name = 'File book[m]ark', _ = 'which_key_ignore' },
   ['<leader>e'] = { name = '[E]valuate', _ = 'which_key_ignore' },
@@ -1145,6 +1157,7 @@ mason_lspconfig.setup_handlers {
 -- Manual lsp config
 local lspconfig = require('lspconfig')
 lspconfig.zls.setup {
+  on_attach = on_attach,
   comd = {vim.fn.exepath('zls')},
   settings = {
     zls = {
