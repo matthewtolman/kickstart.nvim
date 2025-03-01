@@ -133,6 +133,18 @@ require('lazy').setup({
     },
   },
 
+  -- Markdown TOC
+  {
+    "hedyhli/markdown-toc.nvim",
+    ft = "markdown",  -- Lazy load on markdown filetype
+    cmd = { "Mtoc" }, -- Or, lazy load on "Mtoc" command
+    config = function()
+      require('mtoc').setup({
+        fences = true,
+      })
+    end,
+  },
+
   -- Go
   'ray-x/go.nvim',
 
@@ -284,24 +296,6 @@ require('lazy').setup({
   -- Undo tree
   'mbbill/undotree',
 
-  -- Guard for formatting
-  "clang-format",
-  {
-    "nvimdev/guard.nvim",
-    dependencies = {
-      "nvimdev/guard-collection"
-    },
-    event = "VeryLazy",
-    config = function()
-      local ft = require("guard.filetype")
-      ft("c,cpp"):fmt("clang-format")
-
-      require("guard").setup({
-        fmt_on_save = true,
-        lsp_as_default_formatter = fals,
-      })
-    end,
-  },
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
   -- For Qalc (calculator CLI app)
@@ -1012,71 +1006,71 @@ vim.keymap.set('n', "<leader><leader>vw", require('visual-whitespace').toggle, {
 
 -- document existing key chains
 -- [KEYMAP DOCS]
-require('which-key').register {
-  ['<leader>c'] = { name = '[C]ode/[C]olumn', _ = 'which_key_ignore' },
-  ['<leader>d'] = { name = '[d]ebug', _ = 'which_key_ignore' },
-  ['<leader>dt'] = { name = '[d]ebug [t]imetravel', _ = 'which_key_ignore' },
-  ['<leader>dr'] = { name = '[d]ebug [r]repl', _ = 'which_key_ignore' },
-  ['<leader>df'] = { name = '[d]ebug [f]rames', _ = 'which_key_ignore' },
-  ['<leader>f'] = { name = 'LSP', _ = 'which_key_ignore' },
-  ['<leader>b'] = { name = '[b]ookmark', _ = 'which_key_ignore' },
-  ['<leader>m'] = { name = 'File book[m]ark', _ = 'which_key_ignore' },
-  ['<leader>e'] = { name = '[E]valuate', _ = 'which_key_ignore' },
-  ['<leader>l'] = { name = '[L]ogs', _ = 'which_key_ignore' },
-  ['<leader>p'] = { name = '[P]arInfer', _ = 'which_key_ignore' },
-  ['<leader>t'] = { name = '[T]esting', _ = 'which_key_ignore' },
-  ['<leader>g'] = { name = '[G]it', _ = 'which_key_ignore' },
-  ['<leader>r'] = { name = '[R]ename', _ = 'which_key_ignore' },
-  ['<leader>s'] = { name = '[S]earch/REPL [S]ession/[S]creen', _ = 'which_key_ignore' },
-  ['<leader>w'] = { name = '[W]orkspace', _ = 'which_key_ignore' },
-  ['<leader>h'] = { name = '[H]url/[H]ttp', _ = 'which_key_ignore' },
-  ['<leader><leader>'] = { name = 'More', _ = 'which_key_ignore' },
+require('which-key').add ({
+  {'<leader>c', name = '[C]ode/[C]olumn'},
+  {'<leader>d', name = '[d]ebug'},
+  {'<leader>dt', name = '[d]ebug [t]imetravel'},
+  {'<leader>dr', name = '[d]ebug [r]repl'},
+  {'<leader>df', name = '[d]ebug [f]rames'},
+  {'<leader>f', name = 'LSP'},
+  {'<leader>b', name = '[b]ookmark'},
+  {'<leader>m', name = 'File book[m]ark'},
+  {'<leader>e', name = '[E]valuate'},
+  {'<leader>l', name = '[L]ogs'},
+  {'<leader>p', name = '[P]arInfer'},
+  {'<leader>t', name = '[T]esting'},
+  {'<leader>g', name = '[G]it'},
+  {'<leader>r', name = '[R]ename'},
+  {'<leader>s', name = '[S]earch/REPL [S]ession/[S]creen'},
+  {'<leader>w', name = '[W]orkspace'},
+  {'<leader>h', name = '[H]url/[H]ttp'},
+  {'<leader><leader>', name = 'More'},
 
-  ['v['] = { name = 'Select Previous', _ = 'which_key_ignore' },
-  ['v[%'] = { name = 'Smart Select Previous', _ = 'which_key_ignore' },
-  ['v]'] = { name = 'Select Next', _ = 'which_key_ignore' },
-  ['v]%'] = { name = 'Smart Select Next', _ = 'which_key_ignore' },
-  ['v<leader>'] = { name = 'Hop Select', _ = 'which_key_ignore' },
-  ['vg'] = { name = 'File Select', _ = 'which_key_ignore' },
+  {'v[', name = 'Select Previous'},
+  {'v[%', name = 'Smart Select Previous'},
+  {'v]', name = 'Select Next'},
+  {'v]%', name = 'Smart Select Next'},
+  {'v<leader>', name = 'Hop Select'},
+  {'vg', name = 'File Select'},
 
-  ['d['] = { name = 'Delete Previous', _ = 'which_key_ignore' },
-  ['d[%'] = { name = 'Smart Delete Previous', _ = 'which_key_ignore' },
-  ['d]'] = { name = 'Delete Next', _ = 'which_key_ignore' },
-  ['d]%'] = { name = 'Smart Delete Next', _ = 'which_key_ignore' },
-  ['d<leader>'] = { name = 'Hop Delete', _ = 'which_key_ignore' },
-  ['dg'] = { name = 'File Delete', _ = 'which_key_ignore' },
+  {'d[', name = 'Delete Previous'},
+  {'d[%', name = 'Smart Delete Previous'},
+  {'d]', name = 'Delete Next'},
+  {'d]%', name = 'Smart Delete Next'},
+  {'d<leader>', name = 'Hop Delete'},
+  {'dg', name = 'File Delete'},
 
-  ['y['] = { name = 'Yank Previous', _ = 'which_key_ignore' },
-  ['y[%'] = { name = 'Smart Yank Previous', _ = 'which_key_ignore' },
-  ['y]'] = { name = 'Yank Next', _ = 'which_key_ignore' },
-  ['y]%'] = { name = 'Smart Yank Next', _ = 'which_key_ignore' },
-  ['y<leader>'] = { name = 'Hop Yank', _ = 'which_key_ignore' },
-  ['yg'] = { name = 'File Yank', _ = 'which_key_ignore' },
+  {'y[', name = 'Yank Previous'},
+  {'y[%', name = 'Smart Yank Previous'},
+  {'y]', name = 'Yank Next'},
+  {'y]%', name = 'Smart Yank Next'},
+  {'y<leader>', name = 'Hop Yank'},
+  {'yg', name = 'File Yank'},
 
-  ['c['] = { name = 'Change Previous', _ = 'which_key_ignore' },
-  ['c[%'] = { name = 'Smart Change Previous', _ = 'which_key_ignore' },
-  ['c]'] = { name = 'Change Next', _ = 'which_key_ignore' },
-  ['c]%'] = { name = 'Smart Change Next', _ = 'which_key_ignore' },
-  ['c<leader>'] = { name = 'Hop Change', _ = 'which_key_ignore' },
-  ['cg'] = { name = 'File Change', _ = 'which_key_ignore' },
+  {'c[', name = 'Change Previous'},
+  {'c[%', name = 'Smart Change Previous'},
+  {'c]', name = 'Change Next'},
+  {'c]%', name = 'Smart Change Next'},
+  {'c<leader>', name = 'Hop Change'},
+  {'cg', name = 'File Change'},
 
-  ['>['] = { name = 'Indent Previous', _ = 'which_key_ignore' },
-  ['>[%'] = { name = 'Smart Indent Previous', _ = 'which_key_ignore' },
-  ['>]'] = { name = 'Indent Next', _ = 'which_key_ignore' },
-  ['>]%'] = { name = 'Smart Indent Next', _ = 'which_key_ignore' },
-  ['><leader>'] = { name = 'Hop Indent', _ = 'which_key_ignore' },
-  ['>g'] = { name = 'File Indent', _ = 'which_key_ignore' },
+  {'>[', name = 'Indent Previous'},
+  {'>[%', name = 'Smart Indent Previous'},
+  {'>]', name = 'Indent Next'},
+  {'>]%', name = 'Smart Indent Next'},
+  {'><leader>', name = 'Hop Indent'},
+  {'>g', name = 'File Indent'},
 
-  ['<['] = { name = 'DeIndent Previous', _ = 'which_key_ignore' },
-  ['<[%'] = { name = 'Smart DeIndent Previous', _ = 'which_key_ignore' },
-  ['<]'] = { name = 'DeIndent Next', _ = 'which_key_ignore' },
-  ['<]%'] = { name = 'Smart DeIndent Next', _ = 'which_key_ignore' },
-  ['<<leader>'] = { name = 'Hop DeIndent', _ = 'which_key_ignore' },
-  ['<g'] = { name = 'File DeIndent', _ = 'which_key_ignore' },
+  {'<[', name = 'DeIndent Previous'},
+  {'<[%', name = 'Smart DeIndent Previous'},
+  {'<]', name = 'DeIndent Next'},
+  {'<]%', name = 'Smart DeIndent Next'},
+  {'<<leader>', name = 'Hop DeIndent'},
+  {'<g', name = 'File DeIndent'},
 
-  ['[o'] = { name = 'Soft wrap', _ = 'which_key_ignore' },
-  [']o'] = { name = 'Hard wrap', _ = 'which_key_ignore' },
-}
+  {'[o', name = 'Soft wrap'},
+  {']o', name = 'Hard wrap'},
+})
 
 -- mason-lspconfig requires that these setup functions are called in this order
 -- before setting up the servers.
@@ -1158,7 +1152,7 @@ mason_lspconfig.setup_handlers {
 local lspconfig = require('lspconfig')
 lspconfig.zls.setup {
   on_attach = on_attach,
-  comd = {vim.fn.exepath('zls')},
+  cmd = {vim.fn.exepath('zls')},
   settings = {
     zls = {
       zig_exe_path =  os.getenv("HOME") .. "/zig/master/files/zig",
