@@ -781,9 +781,9 @@ vim.defer_fn(function()
     incremental_selection = {
       enable = true,
       keymaps = {
-        init_selection = '<c-space>',
-        node_incremental = '<c-space>',
-        scope_incremental = '<c-s>',
+        init_selection = '<C-Space>',
+        node_incremental = '<C-Space>',
+        scope_incremental = '<C-s>',
         node_decremental = '<M-space>',
       },
     },
@@ -1077,41 +1077,6 @@ require('which-key').add ({
 require('mason').setup()
 require('mason-lspconfig').setup()
 
--- Enable the following language servers
---  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
---
---  Add any additional override configuration in the following tables. They will be passed to
---  the `settings` field of the server config. You must look up that documentation yourself.
---
---  If you want to override the default filetypes that your language server will attach to you can
---  define the property 'filetypes' to the map in question.
-local servers = {
-  clangd = {},
-  -- gopls = {},
-  -- pyright = {},
-  -- rust_analyzer = {},
-  tsserver = {},
-  html = { filetypes = { 'html', 'twig', 'hbs', 'heex' } },
-  elixirls = {
-
-  },
-  gopls = {},
-
-  lua_ls = {
-    Lua = {
-      workspace = { checkThirdParty = false },
-      telemetry = { enable = false },
-    },
-  },
-  emmet_language_server = {},
-  ols = { filetypes = { 'odin' } },
-  -- elp = {},
-
-  cmake = {},
-  -- CLOJURE
-  clojure_lsp = {},
-}
-
 -- Setup oil.nvim
 require("oil").setup({
   columns = {
@@ -1130,7 +1095,38 @@ require('neodev').setup()
 local capabilities = vim.lsp.protocol.make_client_capabilities()
 capabilities = require('cmp_nvim_lsp').default_capabilities(capabilities)
 
--- Ensure the servers above are installed
+-- [[LSP CONFIG]]
+-- Enable the following language servers
+--  Feel free to add/remove any LSPs that you want here. They will automatically be installed.
+--
+--  Add any additional override configuration in the following tables. They will be passed to
+--  the `settings` field of the server config. You must look up that documentation yourself.
+--
+--  If you want to override the default filetypes that your language server will attach to you can
+--  define the property 'filetypes' to the map in question.
+local servers = {
+  clangd = {},
+  gopls = {},
+  pyright = {},
+  rust_analyzer = {},
+  ts_ls = {},
+  html = { filetypes = { 'html', 'twig', 'hbs', 'heex' } },
+  elixirls = {},
+
+  lua_ls = {
+    Lua = {
+      workspace = { checkThirdParty = false },
+      telemetry = { enable = false },
+    },
+  },
+  emmet_language_server = {},
+  ols = { filetypes = { 'odin' } },
+  elp = {},
+
+  cmake = {},
+  -- CLOJURE
+  clojure_lsp = {},
+}
 local mason_lspconfig = require 'mason-lspconfig'
 
 mason_lspconfig.setup {
@@ -1150,19 +1146,21 @@ mason_lspconfig.setup_handlers {
 
 -- Manual lsp config
 local lspconfig = require('lspconfig')
-lspconfig.zls.setup {
-  on_attach = on_attach,
-  cmd = {vim.fn.exepath('zls')},
-  settings = {
-    zls = {
-      zig_exe_path =  os.getenv("HOME") .. "/zig/master/files/zig",
-      warn_style = true,
-      highlight_global_var_declarations = true,
+
+if vim.fn.exepath('zls') ~= nil and vim.fn.exepath('zls') ~= '' then
+  lspconfig.zls.setup {
+    on_attach = on_attach,
+    cmd = {vim.fn.exepath('zls')},
+    settings = {
+      zls = {
+        zig_exe_path =  os.getenv("HOME") .. "/zig/master/files/zig",
+        warn_style = true,
+        highlight_global_var_declarations = true,
+      }
     }
   }
-}
+end
 
---
 
 -- [[ Configure nvim-cmp ]]
 -- See `:help cmp`
