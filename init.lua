@@ -1,3 +1,6 @@
+local vimrc = vim.fn.stdpath("config") .. "/vimrc.vim"
+vim.cmd.source(vimrc)
+
 --[[
 
 =====================================================================
@@ -186,85 +189,10 @@ require('lazy').setup({
     end,
   },
 
-  -- NOTE: First, some plugins that don't require any configuration
-  --
-  -- Clojure
-  'Olical/conjure',
-  {
-    "dundalek/parpar.nvim",
-    dependencies = { "gpanders/nvim-parinfer", "julienvincent/nvim-paredit" },
-    config = function()
-      local paredit = require("nvim-paredit")
-      require("parpar").setup {
-        paredit = {
-          indent = { enabled = true },
-          -- pass any nvim-paredit options here
-          keys = {
-            -- custom bindings are automatically wrapped
-            [">)"] = { paredit.api.slurp_forwards, "Slurp forwards" },
-            [">("] = { paredit.api.barf_backwards, "Barf backwards" },
-
-            ["<)"] = { paredit.api.barf_forwards, "Barf forwards" },
-            ["<("] = { paredit.api.slurp_backwards, "Slurp backwards" },
-
-            [">e"] = { paredit.api.drag_element_forwards, "Drag element right" },
-            ["<e"] = { paredit.api.drag_element_backwards, "Drag element left" },
-
-            [">f"] = { paredit.api.drag_form_forwards, "Drag form right" },
-            ["<f"] = { paredit.api.drag_form_backwards, "Drag form left" },
-
-            ["<localleader>o"] = { paredit.api.raise_form, "Raise form" },
-            ["<localleader>O"] = { paredit.api.raise_element, "Raise element" },
-
-            ["E"] = {
-              paredit.api.move_to_next_element_tail,
-              "Jump to next element tail",
-              -- by default all keybindings are dot repeatable
-              repeatable = false,
-              mode = { "n", "x", "o", "v" },
-            },
-            ["W"] = {
-              paredit.api.move_to_next_element_head,
-              "Jump to next element head",
-              repeatable = false,
-              mode = { "n", "x", "o", "v" },
-            },
-
-            ["B"] = {
-              paredit.api.move_to_prev_element_head,
-              "Jump to previous element head",
-              repeatable = false,
-              mode = { "n", "x", "o", "v" },
-            },
-            ["gE"] = {
-              paredit.api.move_to_prev_element_tail,
-              "Jump to previous element tail",
-              repeatable = false,
-              mode = { "n", "x", "o", "v" },
-            },
-
-            ["("] = {
-              paredit.api.move_to_parent_form_start,
-              "Jump to parent form's head",
-              repeatable = false,
-              mode = { "n", "x", "v" },
-            },
-            [")"] = {
-              paredit.api.move_to_parent_form_end,
-              "Jump to parent form's tail",
-              repeatable = false,
-              mode = { "n", "x", "v" },
-            },
-          }
-        }
-      }
-    end
-  },
   --'guns/vim-sexp',
   --'tpope/vim-sexp-mappings-for-regular-people',
   --'tpope/vim-repeat',
   'tpope/vim-surround',
-  'PaterJason/cmp-conjure',
 
   -- Testing
   'vim-test/vim-test',
@@ -964,8 +892,12 @@ local setup_dap = function()
 
   nmap('<leader>de', function()
     local widgets = require('dap.ui.widgets')
-    widgets.cursor_float(widgets.expression)
+    widgets.hover(widgets.expression)
   end, '[e]xpression')
+  vim.keymap.set('v', '<leader>de', function()
+    local widgets = require('dap.ui.widgets')
+    widgets.hover(widgets.expression)
+  end, { desc = '[d]ebug [e]xpression' })
 
   nmap('<leader>ds', function()
     local widgets = require('dap.ui.widgets')
