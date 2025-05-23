@@ -1557,5 +1557,16 @@ vim.keymap.set('', '<leader>;', function()
   hop.hint_words()
 end, { desc = 'Hop words' })
 
+-- Setup oil.nvim
+require('oil').setup {
+  columns = {
+    'icon',
+    'permissions',
+    'size',
+    'mtime',
+  },
+}
+vim.keymap.set('n', '-', '<CMD>Oil<CR>', { desc = 'Open parent directory' })
+
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
