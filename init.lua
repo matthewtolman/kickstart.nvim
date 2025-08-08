@@ -1,3 +1,5 @@
+vim.cmd.source 'C:/Users/TofuR/Desktop/whitebox_nightly-2025-05-22/editor_plugins/whitebox-vim/plugin/whitebox.vim'
+
 --[[
 
 =====================================================================
@@ -168,6 +170,9 @@ vim.o.confirm = true
 
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
+
+-- Whitebox keymap
+vim.keymap.set('n', '<leader>wc', vim.fn['WhiteBoxConnect'], { desc = 'WhiteBox [c]onnect' })
 
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
@@ -398,7 +403,7 @@ require('lazy').setup({
         { '<leader>g', name = '[G]it' },
         { '<leader>r', name = '[R]ename' },
         { '<leader>s', name = '[S]earch/REPL [S]ession/[S]creen' },
-        { '<leader>w', name = '[W]orkspace' },
+        { '<leader>w', name = '[W]hiteBox' },
         { '<leader>h', name = '[H]url/[H]ttp' },
         { '<leader><leader>', name = 'More' },
 
@@ -534,6 +539,14 @@ require('lazy').setup({
   -- Relative & Absolute Automatic number toggling
   'jeffkreeftmeijer/vim-numbertoggle',
 
+  {
+    'glepnir/nerdicons.nvim',
+    cmd = 'NerdIcons',
+    config = function()
+      require('nerdicons').setup {}
+    end,
+  },
+
   -- For status line customization
   {
     -- Set lualine as statusline
@@ -562,10 +575,22 @@ require('lazy').setup({
               return require('arrow.statusline').text_for_statusline_with_icons(nil)
             end,
           },
-          lualine_x = { { 'encoding', show_bomb = true }, 'fileformat' },
+          lualine_x = {
+            function()
+              if vim.fn['WhiteBoxIsConnected']() > 0 then
+                return '󰖩 '
+              else
+                return '󰤯 '
+              end
+            end,
+            { 'encoding', show_bomb = true },
+            'fileformat',
+          },
         },
         tabline = {
-          lualine_b = { { 'filename', path = 3, newfile_status = true, shorting_target = 60 } },
+          lualine_b = {
+            { 'filename', path = 3, newfile_status = true, shorting_target = 60 },
+          },
           lualine_c = { { 'filetype', icon = { align = 'right' } }, quickfix },
           lualine_y = { { 'datetime', style = '%H:%M:%S' } },
         },
