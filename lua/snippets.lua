@@ -731,3 +731,45 @@ ls.add_snippets('erlang', {
     },
   }),
 })
+
+ls.add_snippets('c', {
+  s('slice_def', {
+    t 'typedef struct slice_',
+    i(1, 'type'),
+    t {
+      ' {',
+      '\t',
+    },
+    f(copy, 1),
+    t {
+      ' *head;',
+      '\tsize_t len;',
+    },
+  }),
+
+  s('slice_at_ensure', {
+    t 'ensure(',
+    i(1, 'Slice'),
+    t {
+      '.head != NULL);',
+      'ensure(',
+    },
+    i(2, 'index'),
+    t ' < ',
+    f(copy, 1),
+    t '.len && ',
+    f(copy, 2),
+    t {
+      ' >= 0);',
+      '',
+    },
+    i(4, 'type'),
+    t ' ',
+    i(3, 'outVal'),
+    t ' = ',
+    f(copy, 1),
+    t '[',
+    f(copy, 2),
+    t '];',
+  }),
+})
