@@ -335,6 +335,34 @@ ls.add_snippets('erlang', {
     t { 'handle_call(_Msg, _From, State) ->', '\t{reply, {error, bad_msg}, State}.' },
   }),
 
+  s('mod', {
+    t { '%% ----------------------------------', '%%', '%% @author ' },
+    i(1, 'Author'),
+    t { '', '%% @copyright ' },
+    i(2, 'Year'),
+    t ', ',
+    i(3, 'Apache 2.0 License'),
+    t { '', '%% @doc ' },
+    i(4, 'Description'),
+    t { '.', '%% @end', '%% @version ' },
+    i(5, 'Version'),
+    t { '', '%% @end', '%%', '%% ----------------------------------', '' },
+    t '-module(',
+    f(file_name),
+    t {
+      ').',
+      '-vsn("',
+    },
+    f(copy, 5),
+    t {
+      '").',
+      '',
+      '-export([',
+    },
+    i(0, ''),
+    t { ']).', '' },
+  }),
+
   s('gen_server', {
     t { '%% ----------------------------------', '%%', '%% @author ' },
     i(1, 'Author'),
