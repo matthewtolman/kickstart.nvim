@@ -84,6 +84,35 @@ I hope you enjoy your Neovim journey,
 P.S. You can delete this when you're done too. It's your config now! :)
 --]]
 
+themes = {
+  dark = {
+    lualine = 'vscode',
+    colorscheme = 'vscode',
+    plugin = 'Mofiqul/vscode.nvim',
+    pluginOpts = function()
+      require('vscode').setup {
+        disable_nvimtree_bg = true,
+        italic_comments = true,
+        italic_inlayhints = true,
+      }
+    end,
+  },
+  light = {
+    lualine = 'vscode',
+    colorscheme = 'vscode',
+    plugin = 'Mofiqul/vscode.nvim',
+    pluginOpts = function()
+      require('vscode').setup {
+        disable_nvimtree_bg = true,
+        italic_comments = true,
+        italic_inlayhints = true,
+      }
+    end,
+  },
+}
+
+theme = 'light'
+
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
@@ -95,7 +124,7 @@ vim.o.shiftwidth = 2
 vim.o.tabstop = 2
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
-vim.g.have_nerd_font = false
+vim.g.have_nerd_font = true
 
 -- [[ Setting options ]]
 -- See `:help vim.o`
@@ -321,6 +350,8 @@ require('lazy').setup({
     },
   },
 
+  'vimpostor/vim-lumen',
+
   {
     'andrewferrier/wrapping.nvim',
     config = function()
@@ -328,6 +359,33 @@ require('lazy').setup({
     end,
   },
 
+  {
+    'nvim-tree/nvim-tree.lua',
+    version = '*',
+    lazy = false,
+    dependencies = {
+      'nvim-tree/nvim-web-devicons',
+    },
+    config = function()
+      require('nvim-tree').setup {
+        sync_root_with_cwd = true,
+        respect_buf_cwd = true,
+        auto_reload_on_write = true,
+        update_focused_file = { enable = true },
+        renderer = {
+          highlight_modified = 'all',
+        },
+        modified = {
+          enable = true,
+          show_on_dirs = true,
+        },
+        filesystem_watchers = {
+          enable = true,
+          ignore_dirs = { '/.ccls-cache', '/build', '/node_modules', '/target', '/.zig-cache' },
+        },
+      }
+    end,
+  },
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
   -- This is often very useful to both group configuration, as well as handle
@@ -513,6 +571,18 @@ require('lazy').setup({
   'mfussenegger/nvim-dap',
   'jay-babu/mason-nvim-dap.nvim',
 
+  -- JS Debugger
+  {
+    'rcarriga/nvim-dap-ui',
+    dependencies = { 'nvim-neotest/nvim-nio' },
+  },
+  {
+    'microsoft/vscode-js-debug',
+    ft = { 'typescript', 'javascript', 'json', 'jsonc', 'html' },
+    build = 'npm install --legacy-peer-deps && npx gulp vsDebugServerBundle && mv dist out',
+    lazy = true,
+  },
+
   -- Git related plugins
   'tpope/vim-fugitive',
   'tpope/vim-rhubarb',
@@ -558,7 +628,7 @@ require('lazy').setup({
     config = function()
       require('lualine').setup {
         options = {
-          theme = 'onedark',
+          theme = themes[theme].lualine,
           component_separators = '|',
         },
         extensions = { 'quickfix', 'nvim-tree', 'mason', 'lazy', 'nvim-dap-ui' },
@@ -1186,20 +1256,16 @@ require('lazy').setup({
     -- change the command in the config to whatever the name of that colorscheme is.
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
+    themes[theme].plugin,
     priority = 1000, -- Make sure to load this before all the other start plugins.
     config = function()
       ---@diagnostic disable-next-line: missing-fields
-      require('tokyonight').setup {
-        styles = {
-          comments = { italic = false }, -- Disable italics in comments
-        },
-      }
+      themes[theme].pluginOpts()
 
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-night'
+      vim.cmd.colorscheme(themes[theme].colorscheme)
     end,
   },
 
@@ -1246,7 +1312,7 @@ require('lazy').setup({
   { -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     dependencies = {
-      'HiPhish/rainbow-delimiters.nvim',
+      -- 'HiPhish/rainbow-delimiters.nvim',
       'nvim-treesitter/nvim-treesitter-textobjects',
     },
     build = ':TSUpdate',
@@ -1256,7 +1322,7 @@ require('lazy').setup({
       ensure_installed = { 'bash', 'c', 'cpp', 'hurl', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
       -- Autoinstall languages that are not installed
       auto_install = true,
-      rainbow = { enable = true },
+      -- rainbow = { enable = true },
       highlight = {
         enable = true,
         -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
@@ -1373,9 +1439,6 @@ require('lazy').setup({
 -- [[Configure Session Manager]]
 require('auto-session').setup {
   auto_session_suppress_dirs = { '~/', '~/dev', '~/Downloads', '/' },
-  options = {
-    theme = 'tokyonight',
-  },
   sections = { lualine_c = { require('auto-session.lib').current_session_name } },
   auto_save_enabled = true,
   auto_restore_enabled = true,
@@ -1395,7 +1458,7 @@ vim.api.nvim_create_autocmd('TextYankPost', {
 
 -- [ Automatically Configure Dap ]
 require('mason-nvim-dap').setup {
-  ensure_installed = { 'cppdbg', 'codelldb' },
+  ensure_installed = { 'cppdbg', 'codelldb', 'js-debug-adapter', 'delve' },
   automatic_installation = true,
   handlers = {
     function(config)
@@ -1415,7 +1478,9 @@ require('mason-nvim-dap').setup {
   },
 }
 
--- [manual dapaters]
+-- [manual dapaters DAP]
+local dapui = require 'dapui'
+dapui.setup()
 
 local dap = require 'dap'
 dap.adapters.debugpy = {
@@ -1427,7 +1492,187 @@ dap.adapters.debugpy = {
   },
 }
 
+local function get_pkg_path(pkg, path)
+  pcall(require, 'mason')
+  local root = vim.env.MASON or (vim.fn.stdpath 'data' .. '/mason')
+  path = path or ''
+  local ret = root .. '/packages/' .. pkg .. '/' .. path
+  return ret
+end
+
+dap.adapters['node'] = {
+  type = 'server',
+  host = 'localhost',
+  port = '${port}',
+  executable = {
+    command = 'node',
+    args = {
+      get_pkg_path('js-debug-adapter', '/js-debug/src/dapDebugServer.js'),
+      '${port}',
+    },
+  },
+}
+
+dap.adapters['pwa-node'] = {
+  type = 'server',
+  host = 'localhost',
+  port = '${port}',
+  executable = {
+    command = 'node',
+    args = {
+      get_pkg_path('js-debug-adapter', '/js-debug/src/dapDebugServer.js'),
+      '${port}',
+    },
+  },
+}
+
+-- custom adapter for running tasks before starting debug
+
+for _, language in ipairs { 'javascript' } do
+  dap.configurations[language] = {
+    {
+      name = 'Launch File',
+      type = 'pwa-node',
+      request = 'launch',
+      program = '${file}',
+      rootPath = '${workspaceFolder}',
+      cwd = '${workspaceFolder}',
+      sourceMap = true,
+    },
+    {
+      name = 'Attach to node process',
+      type = 'pwa-node',
+      request = 'attach',
+      rootPath = '${workspaceFolder}',
+      processId = require('dap.utils').pick_process,
+      sourceMap = true,
+    },
+  }
+end
+
+dap.configurations.typescript = {
+  {
+    name = 'Attach to node process',
+    type = 'pwa-node',
+    request = 'attach',
+    rootPath = '${workspaceFolder}',
+    processId = require('dap.utils').pick_process,
+    sourceMap = true,
+  },
+}
+
 -- [ dap commands ]
+
+require('lazydev').setup {
+  library = { 'nvim-dap-ui' },
+}
+
+local dapui = require 'dapui'
+dapui.setup {
+  controls = {
+    element = 'repl',
+    enabled = true,
+    icons = {
+      disconnect = '',
+      pause = '',
+      play = '',
+      run_last = '',
+      step_back = '',
+      step_into = '',
+      step_out = '',
+      step_over = '',
+      terminate = '',
+    },
+  },
+  element_mappings = {},
+  expand_lines = true,
+  floating = {
+    border = 'single',
+    mappings = {
+      close = { 'q', '<Esc>' },
+    },
+  },
+  force_buffers = true,
+  icons = {
+    collapsed = '',
+    current_frame = '',
+    expanded = '',
+  },
+  layouts = {
+    {
+      elements = {
+        {
+          id = 'scopes',
+          size = 0.5,
+        },
+        {
+          id = 'watches',
+          size = 0.5,
+        },
+      },
+      position = 'left',
+      size = 60,
+    },
+    {
+      elements = {
+        {
+          id = 'stacks',
+          size = 0.75,
+        },
+        {
+          id = 'breakpoints',
+          size = 0.25,
+        },
+      },
+      position = 'right',
+      size = 40,
+    },
+    {
+      elements = { {
+        id = 'repl',
+        size = 0.5,
+      }, {
+        id = 'console',
+        size = 0.5,
+      } },
+      position = 'bottom',
+      size = 10,
+    },
+  },
+  mappings = {
+    edit = 'e',
+    expand = { '<CR>', '<2-LeftMouse>' },
+    open = 'o',
+    remove = 'd',
+    repl = 'r',
+    toggle = 't',
+  },
+  render = {
+    indent = 1,
+    max_value_lines = 100,
+  },
+}
+
+dap.listeners.before.attach.dapui_config = function()
+  dapui.open()
+  nvimTree.tree.close {}
+end
+dap.listeners.before.launch.dapui_config = function()
+  dapui.open()
+  nvimTree.tree.close {}
+end
+dap.listeners.before.event_terminated.dapui_config = function()
+  dapui.close()
+  if not nvimTree.tree.is_visible() then
+    nvimTree.tree.toggle { focus = false }
+  end
+end
+dap.listeners.before.event_exited.dapui_config = function()
+  dapui.close()
+  if not nvimTree.tree.is_visible() then
+    nvimTree.tree.toggle { focus = false }
+  end
+end
 
 local setup_dap = function()
   local nmap = function(keys, func, desc)
@@ -1596,7 +1841,27 @@ require('oil').setup {
 }
 vim.keymap.set('n', '-', '<CMD>Oil<CR>', { desc = 'Open parent directory' })
 
+-- Nvim Tree
+nvimTree = require 'nvim-tree.api'
+nvimTree.tree.open {}
+
+vim.keymap.set('n', '<leader>nt', function()
+  nvimTree.tree.toggle {
+    find_file = true,
+  }
+end, { desc = 'Toggle Tree' })
+
+vim.keymap.set('n', '<leader>nf', function()
+  nvimTree.tree.find_file()
+  nvimTree.tree.focus()
+end, { desc = 'Find File' })
+
 require 'snippets'
+
+vim.api.nvim_set_keymap('n', '<C-S>', ':wa<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('v', '<C-S>', ':wa<CR>gv', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('i', '<C-S>', '<C-O>:wa<CR>', { noremap = true, silent = true })
+vim.api.nvim_set_keymap('c', '<C-S>', '<C-C>:wa<CR>', { noremap = true, silent = true })
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
