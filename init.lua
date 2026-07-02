@@ -390,10 +390,7 @@ do
     },
   }
 
-  -- Load the colorscheme here.
-  -- Like many other themes, this one has different styles, and you could load
-  -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-  vim.cmd.colorscheme 'tokyonight-night'
+  vim.pack.add { gh 'Mofiqul/vscode.nvim' }
 
   -- Highlight todo, notes, etc in comments
   vim.pack.add { gh 'folke/todo-comments.nvim' }
@@ -485,6 +482,31 @@ do
     gh 'nvim-telescope/telescope-ui-select.nvim',
   }
   if vim.fn.executable 'make' == 1 then table.insert(telescope_plugins, gh 'nvim-telescope/telescope-fzf-native.nvim') end
+
+  vim.pack.add { gh 'stevearc/oil.nvim' }
+  require("oil").setup()
+  vim.keymap.set("n", "<leader>n-", "<CMD>Oil<CR>", { desc = "Open parent directory" })
+  vim.keymap.set("n", "<leader>nt", "<CMD>Neotree show reveal=true toggle=true<CR>", { desc = "Toggle file system" })
+  vim.keymap.set("n", "<leader>nf", "<CMD>Neotree show reveal=true<CR>", { desc = "Focus on current file" })
+
+  vim.pack.add({
+    {
+      src = 'https://github.com/nvim-neo-tree/neo-tree.nvim',
+      version = vim.version.range('3')
+    },
+    -- dependencies
+    "https://github.com/nvim-lua/plenary.nvim",
+    "https://github.com/MunifTanjim/nui.nvim",
+    -- optional, but recommended
+    "https://github.com/nvim-tree/nvim-web-devicons",
+  })
+
+  require('neo-tree').setup({
+    close_if_last_window = true,
+    enable_git_status = true,
+    open_files_do_not_replace_types = { "terminal", "trouble", "qf" },
+    sort_case_insensitive = true,
+  })
 
   -- NOTE: You can install multiple plugins at once
   vim.pack.add(telescope_plugins)
@@ -966,12 +988,12 @@ do
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug'
-  -- require 'kickstart.plugins.indent_line'
-  -- require 'kickstart.plugins.lint'
-  -- require 'kickstart.plugins.autopairs'
+  require 'kickstart.plugins.debug'
+  require 'kickstart.plugins.indent_line'
+  require 'kickstart.plugins.lint'
+  require 'kickstart.plugins.autopairs'
   -- require 'kickstart.plugins.neo-tree'
-  -- require 'kickstart.plugins.gitsigns' -- adds gitsigns recommended keymaps
+  require 'kickstart.plugins.gitsigns' -- adds gitsigns recommended keymaps
 
   -- NOTE: You can add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --
@@ -981,3 +1003,12 @@ end
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+
+  -- load the theme without affecting devicon colors.
+  vim.cmd.colorscheme "vscode"
+
+vim.api.nvim_create_autocmd("VimEnter", {
+	callback = function()
+		vim.cmd("Neotree show reveal=true")
+	end,
+})
