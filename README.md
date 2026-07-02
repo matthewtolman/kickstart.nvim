@@ -34,6 +34,8 @@ External Requirements:
   [fd-find](https://github.com/sharkdp/fd#installation)
 - [tree-sitter CLI](https://github.com/tree-sitter/tree-sitter/blob/master/crates/cli/README.md#installation)
 - Clipboard tool (xclip/xsel/win32yank or other depending on the platform)
+* [fzf](https://github.com/junegunn/fzf)
+* [ag](https://github.com/ggreer/the_silver_searcher)
 - A [Nerd Font](https://www.nerdfonts.com/): optional, provides various icons
   - if you have it set `vim.g.have_nerd_font` in `init.lua` to true
 - Emoji fonts (Ubuntu only, and only if you want emoji!) `sudo apt install fonts-noto-color-emoji`
@@ -235,7 +237,7 @@ sudo apt install make gcc ripgrep fd-find tree-sitter-cli unzip git xclip neovim
 ```
 sudo add-apt-repository ppa:neovim-ppa/unstable -y
 sudo apt update
-sudo apt install make gcc ripgrep fd-find tree-sitter-cli unzip git xclip neovim
+sudo apt install make gcc ripgrep fd-find tree-sitter-cli unzip git xclip neovim fzf silversearcher-ag fonts-noto-color-emoji
 ```
 </details>
 <details><summary>Debian Install Steps</summary>
